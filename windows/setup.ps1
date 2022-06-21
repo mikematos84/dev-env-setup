@@ -1,55 +1,72 @@
+param(
+  [Parameter(HelpMessage="Forces clean install")]
+  [switch]$clean=$false
+)
+
 $config = (Get-Content "$PSScriptRoot\\apps.json" | ConvertFrom-Json)
 
-Write-Output "
+# Clean install. Remove scoop if found
+if($clean -eq $true){
+  if((Get-Command "scoop" -ErrorAction SilentlyContinue)){
+    scoop uninstall scoop
+  }
+}
+
+Write-Host "
   === Scoop ===
 "
-if(Get-Command "scoop" -ErrorAction SilentlyContinue){
-  Write-Output "Previous scoop installation found";
-  if((Get-Command "git" -ErrorAction SilentlyContinue) -eq $null){
-    Write-Output "Missing git dependency required for update"
-    scoop install git-with-openssh
-  }
-}else{
-  Write-Output "Installing scoop."
+# Install scoop if not found
+if((Get-Command "scoop" -ErrorAction SilentlyContinue) -eq $null){
+  Write-Host "Installing scoop."
   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser # Optional: Needed to run a remote script the first time
   irm get.scoop.sh | iex
+}
 
-  # Install Git
-  Write-Output "Installing git"
+# Install git-with-openssh dependency if not found
+# Needed to manage scoop and its buckets
+if((Get-Command "git" -ErrorAction SilentlyContinue) -eq $null){
+  Write-Host "Missing git dependency required for update"
   scoop install git-with-openssh
 }
+
+# Force update to latest if not already
 scoop update
 
 # Install extras bucket
-Write-Output "
+Write-Host "
   === Buckets ===
 "
 scoop bucket add extras
 
 # Install apps
-Write-Output "
-  === Core Apps ===
+Write-Host "
+  === Apps ===
 "
 $list=(Invoke-Expression "scoop list").Name
-foreach($app in $config.core){
-  if($list.Contains($app)){
-    Invoke-Expression "scoop update $app";
-  }else{
-    Invoke-Expression "scoop install $app"
+foreach($category in $config.apps.PSObject.Properties){
+  Write-Host "--- $($category.Name) ---"
+  foreach($app in $category.Value){
+    if($list.Contains($app)){
+      Invoke-Expression "scoop update $app";
+    }else{
+      Invoke-Expression "scoop install $app"
+    }
   }
 }
 
-# Setup node environment
-Write-Output "
-  === NVM (Node Version Manager) ===
-  nvm version $(nvm version)
-"
-foreach($version in $config.nvm.versions){
-  Invoke-Expression "nvm install $version"
+if((Get-Command "nvm" -ErrorAction SilentlyContinue)){
+  # Setup node environment
+  Write-Host "
+    === NVM (Node Version Manager) ===
+    nvm version $(nvm version)
+  "
+  foreach($version in $config.nvm.versions){
+    Invoke-Expression "nvm install $version"
+  }
+  sudo nvm use $config.nvm.default
+  node -v
+  npm -v
 }
-sudo nvm use $config.default
-node -v
-npm -v
 
 Write-Host "
   Environment setup complete!
