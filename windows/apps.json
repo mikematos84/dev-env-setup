@@ -1,0 +1,7 @@
+{
+  "core": ["7zip", "curl", "mkcert", "nvm", "sudo", "yarn", "vscode"],
+  "nvm": {
+    "versions": ["lts", "14"],
+    "default": ["lts"]
+  }
+}
