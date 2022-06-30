@@ -23,6 +23,8 @@ Apps are installed and managed via [scoop](https://scoop.sh).
 
 ### Installation
 
+- TODO
+
 ## OSX
 
 - TODO
