@@ -8,13 +8,20 @@ Apps are installed and managed via [scoop](https://scoop.sh).
 
 ### Core Applications
 
-- 7zip
-- curl
-- mkcert
-- nvm
-- sudo
-- yarn
-- vscode
+- IDE(s) (Integrated Developement Environment(s)
+  - vscode
+- Music
+  - spotify
+- Utilities
+  - 7zip
+  - curl
+  - sudo
+- Web Development
+  - nvm
+  - mkcert
+  - yarn
+
+### Installation
 
 ## OSX
 

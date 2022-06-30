@@ -1,12 +1,12 @@
 {
   "apps": {
-    "IDE(s) (Integrated Developement Environment(s)": ["vscode"],
-    "Web Development": ["mkcert", "nvm", "yarn"],
-    "Utilities": ["7zip", "curl", "sudo"],
-    "Music": ["spotify"]
+    "Integrated Developement Environments (IDE's)": ["vscode"],
+    "Music": ["spotify"],
+    "Utilities": ["7zip", "curl", "ssh", "sudo"],
+    "Web Development": ["mkcert", "nvm", "yarn"]
   },
   "nvm": {
-    "versions": ["lts", "14"],
-    "default": ["lts"]
+    "default": ["lts"],
+    "versions": ["lts", "14"]
   }
 }
