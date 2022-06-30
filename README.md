@@ -6,7 +6,15 @@ This repository contains scripts allowing for quicker and easier setup of your l
 
 Apps are installed and managed via [scoop](https://scoop.sh).
 
+### Prerequisite Apps
+
+These applications are installed by default and are necessary to install further applications using scopp since a base flavor of `git` is required to install other buckets
+
+- git-with-openssh -> includes `bash.exe`
+
 ### Core Applications
+
+These applications are installed and configured using the [`apps.json`](windows/apps.json) file
 
 - IDE(s) (Integrated Developement Environment(s)
   - vscode
@@ -23,7 +31,7 @@ Apps are installed and managed via [scoop](https://scoop.sh).
 
 ### Installation
 
-- TODO
+1. Right click and "Run as Administrator"
 
 ## OSX
 
