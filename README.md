@@ -18,17 +18,17 @@ These applications are installed by default and are necessary to install further
 These applications are installed and configured using the [`apps.json`](windows/apps.json) file
 
 - IDE(s) (Integrated Developement Environment(s)
-  - vscode
+  - `vscode`
 - Music
-  - spotify
+  - `spotify`
 - Utilities
-  - 7zip
-  - curl
-  - sudo
+  - `7zip`
+  - `curl`
+  - `sudo`
 - Web Development
-  - nvm
-  - mkcert
-  - yarn
+  - `nvm`
+  - `mkcert`
+  - `yarn`
 
 ### Installation
 
