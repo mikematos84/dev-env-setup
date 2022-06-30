@@ -26,7 +26,7 @@ if((Get-Command "scoop" -ErrorAction SilentlyContinue) -eq $null){
 # Needed to manage scoop and its buckets
 if((Get-Command "git" -ErrorAction SilentlyContinue) -eq $null){
   Write-Host "Missing git dependency required for update"
-  scoop install git-with-openssh
+  scoop install git-with-openssh sudo
 }
 
 # Force update to latest if not already

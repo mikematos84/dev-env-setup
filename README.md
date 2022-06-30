@@ -10,7 +10,8 @@ Apps are installed and managed via [scoop](https://scoop.sh).
 
 These applications are installed by default and are necessary to install further applications using scopp since a base flavor of `git` is required to install other buckets
 
-- git-with-openssh -> includes `bash.exe`
+- `git-with-openssh` - Includes `bash.exe`
+- `sudo` - Used to prompt user for elevated (Administrator) privelages if required by a particular apps configuration
 
 ### Core Applications
 

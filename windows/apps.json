@@ -2,7 +2,7 @@
   "apps": {
     "Integrated Developement Environments (IDE's)": ["vscode"],
     "Music": ["spotify"],
-    "Utilities": ["7zip", "curl", "ssh", "sudo"],
+    "Utilities": ["7zip", "curl"],
     "Web Development": ["mkcert", "nvm", "yarn"]
   },
   "nvm": {
