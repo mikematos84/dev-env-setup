@@ -17,6 +17,23 @@ These applications are installed by default and are necessary to install further
 
 These applications are installed and configured using the [`apps.json`](windows/apps.json) file
 
+- Communication
+  - `microsoft-teams`
+  - `slack`
+- Connectivity
+  - `teamviewer`
+- Development (Gaming)
+  - `unity-hub-np`
+- Development (General)
+  - `docker`
+  - `docker-compose`
+- Development (Mobile)
+  - `android-studio`
+  - `android-sdk`
+- Development (Web)
+  - `nvm`
+  - `mkcert`
+  - `yarn`
 - IDE(s) (Integrated Developement Environment(s)
   - `vscode`
 - Music
@@ -24,11 +41,7 @@ These applications are installed and configured using the [`apps.json`](windows/
 - Utilities
   - `7zip`
   - `curl`
-  - `sudo`
-- Web Development
-  - `nvm`
-  - `mkcert`
-  - `yarn`
+  - `windows-terminal`
 
 ### Installation
 

@@ -44,12 +44,16 @@ Write-Host "
 "
 $list=(Invoke-Expression "scoop list").Name
 foreach($category in $config.apps.PSObject.Properties){
-  Write-Host "--- $($category.Name) ---"
-  foreach($app in $category.Value){
-    if($list.Contains($app)){
-      Invoke-Expression "scoop update $app";
+  Write-Host "--- $($category.Name)---"
+  foreach($app in $config.apps.PSObject.Properties[$category.Name].Value){
+    if($app.install -eq $true){
+      if($list.Contains($app.Name)){
+        Invoke-Expression "scoop update $($app.Name)";
+      }else{
+        Invoke-Expression "scoop install $($app.Name)"
+      }
     }else{
-      Invoke-Expression "scoop install $app"
+      Write-Host "Skipping install of $($app.Name)"
     }
   }
 }

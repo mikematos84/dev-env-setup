@@ -1,9 +1,33 @@
 {
   "apps": {
-    "Integrated Developement Environments (IDE's)": ["vscode"],
-    "Music": ["spotify"],
-    "Utilities": ["7zip", "curl"],
-    "Web Development": ["mkcert", "nvm", "yarn"]
+    "Communication": [
+      { "name": "microsoft-teams", "install": false },
+      { "name": "slack", "install": true }
+    ],
+    "Connectivity": [{ "name": "teamviewer", "install": false }],
+    "Development (Gaming)": [{ "name": "unity-hub-np", "install": false }],
+    "Development (General)": [
+      { "name": "docker", "install": false },
+      { "name": "docker-compose", "install": false }
+    ],
+    "Development (Mobile)": [
+      { "name": "android-studio", "install": false },
+      { "name": "android-sdk", "install": false }
+    ],
+    "Development (Web)": [
+      { "name": "mkcert", "install": true },
+      { "name": "nvm", "install": true },
+      { "name": "yarn", "install": true }
+    ],
+    "Integrated Developement Environments (IDE's)": [
+      { "name": "vscode", "install": true }
+    ],
+    "Music": [{ "name": "spotify", "install": false }],
+    "Utilities": [
+      { "name": "7zip", "install": true },
+      { "name": "curl", "install": true },
+      { "name": "windows-terminal", "install": true }
+    ]
   },
   "nvm": {
     "default": ["lts"],
