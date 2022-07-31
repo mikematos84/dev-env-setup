@@ -1,36 +1,21 @@
 {
-  "apps": {
-    "Communication": [
-      { "name": "microsoft-teams", "install": false },
-      { "name": "slack", "install": true }
-    ],
-    "Connectivity": [{ "name": "teamviewer", "install": false }],
-    "Development (Gaming)": [{ "name": "unity-hub-np", "install": false }],
-    "Development (General)": [
-      { "name": "docker", "install": false },
-      { "name": "docker-compose", "install": false }
-    ],
-    "Development (Mobile)": [
-      { "name": "android-studio", "install": false },
-      { "name": "android-sdk", "install": false }
-    ],
-    "Development (Web)": [
-      { "name": "mkcert", "install": true },
-      { "name": "nvm", "install": true },
-      { "name": "yarn", "install": true }
-    ],
-    "Integrated Developement Environments (IDE's)": [
-      { "name": "vscode", "install": true }
-    ],
-    "Music": [{ "name": "spotify", "install": false }],
-    "Utilities": [
-      { "name": "7zip", "install": true },
-      { "name": "curl", "install": true },
-      { "name": "windows-terminal", "install": true }
-    ]
-  },
-  "nvm": {
-    "default": ["lts"],
-    "versions": ["lts", "14"]
-  }
+  "dependencies": ["git-with-openssh", "sudo"],
+  "devDependencies": [
+    ["microsoft-teams", { "install": false }],
+    "slack",
+    ["teamviewer", { "install": false }],
+    ["unity-hub-np", { "install": false }],
+    ["docker", { "install": false }],
+    ["docker-compose", { "install": false }],
+    ["android-studio", { "install": false }],
+    ["android-sdk", { "install": false }],
+    "mkcert",
+    ["nvm", { "default": ["lts"], "versions": ["lts", "14"] }],
+    "yarn",
+    "vscode",
+    ["spotify", { "install": false }],
+    "7zip",
+    "curl",
+    "windows-terminal"
+  ]
 }
