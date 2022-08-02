@@ -99,7 +99,7 @@ if((Get-Command "nvm" -ErrorAction SilentlyContinue)){
   npm -v
 }
 
-if((Get-Command "nvm" -ErrorAction SilentlyContinue)){
+if((Get-Command "yarn" -ErrorAction SilentlyContinue)){
   # Setup yarn
   Write-Host "
     === Configure Yarn ===

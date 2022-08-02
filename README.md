@@ -6,42 +6,38 @@ This repository contains scripts allowing for quicker and easier setup of your l
 
 Apps are installed and managed via [scoop](https://scoop.sh).
 
-### Prerequisite Apps
+### `dependencies`
 
-These applications are installed by default and are necessary to install further applications using scopp since a base flavor of `git` is required to install other buckets
+These are applications required by `scoop`. These dependencies allow it to take various actions such as adding `buckets` or requesting `elevated privelages` on a particular command
 
 - `git-with-openssh` - Includes `bash.exe`
 - `sudo` - Used to prompt user for elevated (Administrator) privelages if required by a particular apps configuration
 
-### Core Applications
+### `devDependencies`
 
 These applications are installed and configured using the [`apps.json`](windows/apps.json) file
 
-- Communication
-  - `microsoft-teams`
-  - `slack`
-- Connectivity
-  - `teamviewer`
-- Development (Gaming)
-  - `unity-hub-np`
-- Development (General)
-  - `docker`
-  - `docker-compose`
-- Development (Mobile)
-  - `android-studio`
-  - `android-sdk`
-- Development (Web)
-  - `nvm`
-  - `mkcert`
-  - `yarn`
-- IDE(s) (Integrated Developement Environment(s)
-  - `vscode`
-- Music
-  - `spotify`
-- Utilities
-  - `7zip`
-  - `curl`
-  - `windows-terminal`
+### Installed By Default
+
+- `7zip`
+- `curl`
+- `mkcert`
+- `nvm`
+- `slack`
+- `vscode`
+- `windows-terminal`
+- `yarn`
+
+### Optional
+
+- `android-sdk`
+- `android-studio`
+- `docker-compose`
+- `docker`
+- `microsoft-teams`
+- `spotify`
+- `teamviewer`
+- `unity-hub-np`
 
 ### Installation
 
