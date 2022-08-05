@@ -16,6 +16,8 @@
     ["spotify", { "install": false }],
     "7zip",
     "curl",
-    "windows-terminal"
+    "windows-terminal",
+    "krita",
+    "dupeguru"
   ]
 }
