@@ -43,6 +43,37 @@ These applications are installed and configured using the [`apps.json`](windows/
 
 1. Right click and "Run as Administrator"
 
+### Setup SSH
+
+You can find more information on generating ssh keys [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
+Generate and ssh key (if you do not have one already)
+
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+# legacy ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+Add key to ssh agent
+
+```bash
+ssh-add ~/.ssh/id_ed25519
+```
+
+Create ssh config file
+
+```bash
+touch ~/.ssh/config
+```
+
+Add the following configuration to the file where `<user>` is your `username`
+
+```txt
+Host github.com
+  Hostname github.com
+  IdentityFile C:\Users\<user>\.ssh\id_rsa
+```
+
 ## OSX
 
 - TODO
