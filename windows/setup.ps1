@@ -108,6 +108,18 @@ if((Get-Command "yarn" -ErrorAction SilentlyContinue)){
   yarn -v
 }
 
+if((Get-Service "ssh-agent" -ErrorAction SilentlyContinue)){
+  # Setup yarn
+  Write-Host "
+    === Configure SSH (for Git Bash) ===
+
+    - adds empty .bash_profile
+    - adds .bashrc to automatically start ssh-agent on opening a new bash terminal
+    - adds .ssh/config for github.com
+  " 
+  Copy-Item -Path ".\windows\home\*" -Destination "$HOME" -Recurse -Force
+}
+
 Write-Host "
   Environment setup complete!
 

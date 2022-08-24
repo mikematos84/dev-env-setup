@@ -70,7 +70,7 @@ Add the following configuration to the file where `<user>` is your `username`
 
 ```txt
 Host github.com
-  Hostname github.com
+  AddKeysToAgent yes
   IdentityFile C:\Users\<user>\.ssh\id_rsa
 ```
 
