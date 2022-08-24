@@ -109,23 +109,22 @@ if((Get-Command "yarn" -ErrorAction SilentlyContinue)){
 }
 
 if((Get-Service "ssh-agent" -ErrorAction SilentlyContinue)){
-  # Setup yarn
+  # Setup SSD
   Write-Host "
-    === Configure SSH (for Git Bash) ===
+    === Configure SSH ===
   " 
-  
-  Write-Host "Setting ssh-agent StartupType to Automatic"
-  Invoke-Expression "sudo Set-Service -Name ssh-agent -StartupType Automatic"
-  
-  Write-Host "Setting ssh-agent Status to Running"
-  Invoke-Expression "sudo Set-Service -Name ssh-agent -Status Running"
-  
+  Invoke-Expression "sudo Get-Service ssh-agent | Set-Service -StartupType Automatic -PassThru | Start-Service"
   Write-Host "
-    - adding empty .bash_profile
-    - adding .bashrc to automatically start ssh-agent on opening a new bash terminal
-    - adding .ssh/config for github.com
+    Added default config to $HOME\.ssh 
   "
-  Copy-Item -Path ".\windows\home\*" -Destination "$HOME" -Recurse -Force
+  Copy-Item ".\windows\.ssh\config" -Destination "$HOME\.ssh\config"
+}
+
+if((Get-Command "git" -ErrorAction SilentlyContinue)){
+  Write-Host "
+    === Configure Git to work with SSH ===
+  " 
+  Invoke-Expression "git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe"
 }
 
 Write-Host "
