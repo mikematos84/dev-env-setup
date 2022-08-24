@@ -112,11 +112,19 @@ if((Get-Service "ssh-agent" -ErrorAction SilentlyContinue)){
   # Setup yarn
   Write-Host "
     === Configure SSH (for Git Bash) ===
-
-    - adds empty .bash_profile
-    - adds .bashrc to automatically start ssh-agent on opening a new bash terminal
-    - adds .ssh/config for github.com
   " 
+  
+  Write-Host "Setting ssh-agent StartupType to Automatic"
+  Invoke-Expression "sudo Set-Service -Name ssh-agent -StartupType Automatic"
+  
+  Write-Host "Setting ssh-agent Status to Running"
+  Invoke-Expression "sudo Set-Service -Name ssh-agent -Status Running"
+  
+  Write-Host "
+    - adding empty .bash_profile
+    - adding .bashrc to automatically start ssh-agent on opening a new bash terminal
+    - adding .ssh/config for github.com
+  "
   Copy-Item -Path ".\windows\home\*" -Destination "$HOME" -Recurse -Force
 }
 
