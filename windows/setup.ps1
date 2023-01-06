@@ -125,6 +125,8 @@ if((Get-Command "git" -ErrorAction SilentlyContinue)){
     === Configure Git to work with SSH ===
   " 
   Invoke-Expression "git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe"
+  Copy-Item ".\windows\.bashrc" -Destination "$HOME\.bashrc"
+  Copy-Item ".\windows\.bash_profile" -Destination "$HOME\.bash_profile"
 }
 
 Write-Host "
