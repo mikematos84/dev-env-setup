@@ -1,6 +1,3 @@
-# Read .env files
-export $(grep -v '^#' .env* | xargs)
-
 # Start SSH Agent
 #----------------------------
 
