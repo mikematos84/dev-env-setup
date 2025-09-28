@@ -3,9 +3,28 @@
 
 This setup makes use of the Windows-based package manager, [Scoop](https://scoop.sh).
 
+## Prerequisites
+
+### System Requirements
+- Windows 10 version 1809 or later, or Windows 11
+- PowerShell 5.1 or later
+- Administrator privileges (for some operations)
+- Internet connection
+
+### OpenSSH Installation
+The setup requires OpenSSH for Windows. If not already installed, you may need to install it manually:
+
+1. Run PowerShell as Administrator
+2. Install OpenSSH Client: `Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0`
+3. Install OpenSSH Server (optional): `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0`
+4. Restart your terminal after installation
+
+### PowerShell Execution Policy
+The script will prompt you to set the execution policy to `RemoteSigned` for the current user. This is required for Scoop installation.
+
 ## Pre-Install
 1. If you have not created any public or private keys, see the [SSH Configuration](../README.md/#ssh-configuration) for more information before moving onto the next step
-2. Place any public (`*.pub`) and private keys in the `.ssh` folder (`C:/Users/<username>/.ssh`). If the folder so not exist, create it. 
+2. Place any public (`*.pub`) and private keys in the `.ssh` folder (`C:/Users/<username>/.ssh`). If the folder does not exist, create it. 
 
 > Make sure to place both the **public** and **private** keys within this folder. The script will look for any public (`*.pub`) keys within this folder and use their base name (`*`) to create the necessary SSH config file
 
@@ -46,23 +65,52 @@ The `config.json` file supports the following sections:
 ### Dependencies
 
 #### Version Control
-- `git-with-openssh` - Used by Scoop to carry out various actions, such as adding [buckets](https://scoop.sh/#/buckets)
+- [`git-with-openssh`](https://scoop.sh/#/apps?q=git-with-openssh) - Used by Scoop to carry out various actions, such as adding [buckets](https://scoop.sh/#/buckets)
 
 #### System Tools
-- `sudo` - Used for requesting elevated (Administrator) privileges required by certain tasks
+- [`sudo`](https://scoop.sh/#/apps?q=sudo) - Used for requesting elevated (Administrator) privileges required by certain tasks
 
 ### DevDependencies
 
 #### Runtime Managers
-- `nvm` - Node version management utility for Windows
+- [`nvm`](https://scoop.sh/#/apps?q=nvm) - Node version management utility for Windows (required)
 
 #### Security Tools
-- `mkcert` - A simple zero-config tool to make locally trusted development certificates
+- [`mkcert`](https://scoop.sh/#/apps?q=mkcert) - A simple zero-config tool to make locally trusted development certificates (optional)
 
 #### Package Managers
-- `yarn` - Node.js dependency manager
+- [`yarn`](https://scoop.sh/#/apps?q=yarn) - Node.js dependency manager (optional)
+- [`pnpm`](https://scoop.sh/#/apps?q=pnpm) - Fast, disk space efficient package manager for Node.js (required)
 
 #### Code Editors
-- `vscode` - Lightweight but powerful source code editor
-- `zed` - Zed code editor
-- `cursor` - Cursor AI-powered code editor
+- [`vscode`](https://scoop.sh/#/apps?q=vscode) - Visual Studio Code editor (optional)
+- [`zed`](https://scoop.sh/#/apps?q=zed) - Zed code editor (optional)
+- [`cursor`](https://scoop.sh/#/apps?q=cursor) - Cursor AI-powered code editor (required)
+
+## Troubleshooting
+
+### Common Issues
+
+#### SSH Agent Service Not Found
+If you encounter "SSH Agent service not found" errors:
+1. Ensure OpenSSH is installed (see Prerequisites section)
+2. Restart your terminal after installing OpenSSH
+3. Run the installation script again
+
+#### PowerShell Execution Policy Errors
+If you get execution policy errors:
+1. Run PowerShell as Administrator
+2. Set execution policy: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force`
+3. Try running the script again
+
+#### Scoop Installation Fails
+If Scoop installation fails:
+1. Check your internet connection
+2. Try running PowerShell as Administrator
+3. Ensure Windows Defender or antivirus isn't blocking the installation
+
+#### Git SSH Configuration Issues
+If Git SSH doesn't work properly:
+1. Verify SSH keys are in `C:/Users/<username>/.ssh/`
+2. Check that the SSH config file was created: `C:/Users/<username>/.ssh/config`
+3. Test SSH connection: `ssh -T git@github.com`
