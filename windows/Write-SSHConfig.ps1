@@ -32,9 +32,10 @@ Host github.com
     Write-Host "To generate SSH keys, run: ssh-keygen -t ed25519 -C 'your_email@example.com'"
   }
 
-  # Write the config file
+  # Write the config file using UTF8 without BOM
   try {
-    $content | Out-File -FilePath $HOME\.ssh\config -Encoding UTF8 -Force
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText("$HOME\.ssh\config", $content, $utf8NoBom)
     Write-Host "SSH config written to $HOME\.ssh\config"
   } catch {
     Write-Error "Failed to write SSH config: $($_.Exception.Message)"
