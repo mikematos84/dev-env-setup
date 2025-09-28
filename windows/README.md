@@ -18,14 +18,67 @@ Right click on **Install.ps1** in the **windows** folder and select **"Run with 
 
 Right click on **Uninstall.ps1** in the **windows** folder and select **"Run with Powershell"**
 
-## dependencies
+## Configuration
 
-- `git` - Used by Scoop to cary out various actions, such as adding [buckets](https://scoop.sh/#/buckets). For the purposes of this environment's setup, we will be using [git-with-openssh](https://scoop.sh/#/apps?q=git-with-openssh)
-- `sudo` - Used for requesting elevated (Administrator) privelages required by certain tasks
+The installation process is now driven by a JSON configuration file (`config.json`) that allows you to customize which applications and tools are installed. This makes it easy to:
 
-## devDependencies
+- Add or remove applications without modifying PowerShell scripts
+- Create different configurations for different environments
+- Track configuration changes in version control
+- Share configurations with team members
 
-- `nvm` - Node version managment utility for windows, 
-- `vscode` - Lightweight but powerful source code editor
-- `mkcert` - A simple zero-config tool to make locally trusted development certificates with any names you'd like
+### Configuration Structure
+
+The `config.json` file supports the following sections:
+
+- **`buckets`**: Array of Scoop buckets to add (e.g., "extras", "main")
+- **`dependencies`**: Required system dependencies (supports optional `category` field for grouping)
+- **`devDependencies`**: Development tools and applications (supports optional `category` field for grouping)
+- **`system`**: System configuration options (SSH, Git, etc.)
+
+### Available Categories
+
+- **`version-control`**: Git and version control tools
+- **`system-tools`**: System utilities and administration tools
+- **`runtime-managers`**: Language and runtime version managers
+- **`security-tools`**: Security and certificate management tools
+- **`package-managers`**: Package and dependency management tools
+- **`code-editors`**: Code editors and IDEs
+- **`containerization`**: Docker and containerization tools
+- **`api-tools`**: API development and testing tools
+
+### Example Configuration
+
+See `config-example.json` for a comprehensive example with additional applications.
+
+### Customizing Your Setup
+
+1. Copy `config-example.json` to `config.json`
+2. Modify the applications list to match your needs
+3. Run the installation script
+
+## Default Applications
+
+### Dependencies
+
+#### Version Control
+- `git-with-openssh` - Used by Scoop to carry out various actions, such as adding [buckets](https://scoop.sh/#/buckets)
+
+#### System Tools
+- `sudo` - Used for requesting elevated (Administrator) privileges required by certain tasks
+
+### DevDependencies
+
+#### Runtime Managers
+- `nvm` - Node version management utility for Windows
+
+#### Security Tools
+- `mkcert` - A simple zero-config tool to make locally trusted development certificates
+
+#### Package Managers
 - `yarn` - Node.js dependency manager
+
+#### Code Editors
+- `vscode` - Lightweight but powerful source code editor
+- `zed` - Zed code editor
+- `cursor` - Cursor AI-powered code editor

@@ -1,0 +1,81 @@
+{
+  "buckets": [
+    "extras",
+    "main"
+  ],
+  "dependencies": [
+    {
+      "name": "git-with-openssh",
+      "description": "Git with OpenSSH support",
+      "required": true,
+      "category": "version-control"
+    },
+    {
+      "name": "sudo",
+      "description": "Elevated privileges utility",
+      "required": false,
+      "category": "system-tools"
+    }
+  ],
+  "devDependencies": [
+    {
+      "name": "nvm",
+      "description": "Node Version Manager",
+      "required": true,
+      "postInstall": "nvm install lts && nvm use lts",
+      "category": "runtime-managers"
+    },
+    {
+      "name": "mkcert",
+      "description": "Local development certificates",
+      "required": false,
+      "category": "security-tools"
+    },
+    {
+      "name": "yarn",
+      "description": "Node.js dependency manager",
+      "required": false,
+      "category": "package-managers"
+    },
+    {
+      "name": "vscode",
+      "description": "Visual Studio Code editor",
+      "required": false,
+      "category": "code-editors"
+    },
+    {
+      "name": "zed",
+      "description": "Zed code editor",
+      "required": false,
+      "category": "code-editors"
+    },
+    {
+      "name": "cursor",
+      "description": "Cursor AI-powered code editor",
+      "required": false,
+      "category": "code-editors"
+    },
+    {
+      "name": "docker",
+      "description": "Docker Desktop",
+      "required": false,
+      "category": "containerization"
+    },
+    {
+      "name": "postman",
+      "description": "API development environment",
+      "required": false,
+      "category": "api-tools"
+    }
+  ],
+  "system": {
+    "sshAgent": {
+      "enabled": true,
+      "autoStart": true
+    },
+    "git": {
+      "configureSSH": true
+    }
+  }
+}
+
