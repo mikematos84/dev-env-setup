@@ -47,15 +47,10 @@ The `config.json` file supports the following sections:
 - **`containerization`**: Docker and containerization tools
 - **`api-tools`**: API development and testing tools
 
-### Example Configuration
-
-See `config-example.json` for a comprehensive example with additional applications.
-
 ### Customizing Your Setup
 
-1. Copy `config-example.json` to `config.json`
-2. Modify the applications list to match your needs
-3. Run the installation script
+1. Edit `config.json` to modify the applications list to match your needs
+2. Run the installation script
 
 ## Default Applications
 
