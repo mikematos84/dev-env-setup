@@ -36,17 +36,6 @@ The `config.json` file supports the following sections:
 - **`devDependencies`**: Development tools and applications (supports optional `category` field for grouping)
 - **`system`**: System configuration options (SSH, Git, etc.)
 
-### Available Categories
-
-- **`version-control`**: Git and version control tools
-- **`system-tools`**: System utilities and administration tools
-- **`runtime-managers`**: Language and runtime version managers
-- **`security-tools`**: Security and certificate management tools
-- **`package-managers`**: Package and dependency management tools
-- **`code-editors`**: Code editors and IDEs
-- **`containerization`**: Docker and containerization tools
-- **`api-tools`**: API development and testing tools
-
 ### Customizing Your Setup
 
 1. Edit `config.json` to modify the applications list to match your needs
