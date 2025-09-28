@@ -32,6 +32,11 @@
       "required": false
     },
     {
+      "name": "pnpm",
+      "description": "Fast, disk space efficient package manager for Node.js",
+      "required": true
+    },
+    {
       "name": "vscode",
       "description": "Visual Studio Code editor",
       "required": false
@@ -44,7 +49,7 @@
     {
       "name": "cursor",
       "description": "Cursor AI-powered code editor",
-      "required": false
+      "required": true
     }
   ],
   "system": {

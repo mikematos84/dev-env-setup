@@ -93,10 +93,14 @@ if((Test-CommandExists scoop) -eq $false){
 # Install dependencies
 Write-Host "Installing dependencies..."
 foreach($dep in $config.dependencies) {
-    if((Test-CommandExists git) -eq $false -and $dep.name -eq "git-with-openssh") {
-        Install-App -appName $dep.name -description $dep.description -required $dep.required
-    } elseif($dep.name -ne "git-with-openssh") {
-        Install-App -appName $dep.name -description $dep.description -required $dep.required
+    if($dep.required) {
+        if((Test-CommandExists git) -eq $false -and $dep.name -eq "git-with-openssh") {
+            Install-App -appName $dep.name -description $dep.description -required $dep.required
+        } elseif($dep.name -ne "git-with-openssh") {
+            Install-App -appName $dep.name -description $dep.description -required $dep.required
+        }
+    } else {
+        Write-Host "Skipping optional dependency: $($dep.name) ($($dep.description))"
     }
 }
 
@@ -106,31 +110,7 @@ if($LASTEXITCODE -ne 0) {
 	Write-Warning "Failed to update Scoop. Continuing with installation..."
 }
 
-# Install devDependencies
-Write-Host "Installing development dependencies..."
-foreach($devDep in $config.devDependencies) {
-    Install-App -appName $devDep.name -description $devDep.description -required $devDep.required -postInstall $devDep.postInstall
-}
-
-# Configure system settings based on configuration
-if($config.system.sshAgent.enabled) {
-    $sshAgentService = Get-Service -Name "ssh-agent" -ErrorAction SilentlyContinue
-    if($sshAgentService) {
-        Write-Host "Configuring SSH Agent..."
-        if($config.system.sshAgent.autoStart) {
-            Set-SSHAgentToAutomaticStartup
-        }
-        Write-SSHConfig
-    } else {
-        Write-Warning "SSH Agent service not found. SSH configuration skipped."
-    }
-}
-
-if($config.system.git.configureSSH -and (Test-CommandExists git) -eq $true){
-    Set-GitCoreSSHCommand
-}
-
-# Add Scoop buckets
+# Add Scoop buckets (must be done before installing apps that depend on them)
 Write-Host "Adding Scoop buckets..."
 try {
 	$bucketListOutput = scoop bucket list 2>$null
@@ -149,6 +129,34 @@ foreach($bucket in $config.buckets){
   	} else {
   		Write-Host "Bucket $bucket already exists"
   	}
+}
+
+# Install devDependencies
+Write-Host "Installing development dependencies..."
+foreach($devDep in $config.devDependencies) {
+    if($devDep.required) {
+        Install-App -appName $devDep.name -description $devDep.description -required $devDep.required -postInstall $devDep.postInstall
+    } else {
+        Write-Host "Skipping optional devDependency: $($devDep.name) ($($devDep.description))"
+    }
+}
+
+# Configure system settings based on configuration
+if($config.system.sshAgent.enabled) {
+    $sshAgentService = Get-Service -Name "ssh-agent" -ErrorAction SilentlyContinue
+    if($sshAgentService) {
+        Write-Host "Configuring SSH Agent..."
+        if($config.system.sshAgent.autoStart) {
+            Set-SSHAgentToAutomaticStartup
+        }
+        Write-SSHConfig
+    } else {
+        Write-Warning "SSH Agent service not found. SSH configuration skipped."
+    }
+}
+
+if($config.system.git.configureSSH -and (Test-CommandExists git) -eq $true){
+    Set-GitCoreSSHCommand
 }
 
 Write-Host "=== Installation Complete ==="
