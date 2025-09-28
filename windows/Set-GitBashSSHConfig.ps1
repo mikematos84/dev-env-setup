@@ -31,11 +31,17 @@ fi
             # Prepend our config to existing content
             Write-Host "Adding SSH configuration to existing .bashrc"
             $newContent = $sshConfig + "`n`n" + $currentContent
-            $newContent | Out-File -FilePath $bashrcPath -Encoding UTF8 -Force
+            
+            # Write using UTF8 without BOM
+            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($bashrcPath, $newContent, $utf8NoBom)
             Write-Host "SSH configuration added to .bashrc"
         } else {
             Write-Host "Creating new .bashrc file with SSH configuration"
-            $sshConfig | Out-File -FilePath $bashrcPath -Encoding UTF8 -Force
+            
+            # Write using UTF8 without BOM
+            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($bashrcPath, $sshConfig, $utf8NoBom)
             Write-Host ".bashrc created successfully"
         }
         
