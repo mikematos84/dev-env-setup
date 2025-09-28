@@ -4,7 +4,6 @@ function Write-SSHConfig {
   $content = @"
 Host *
   AddKeysToAgent yes
-  UseKeychain yes
   IdentitiesOnly yes
 
 Host github.com
