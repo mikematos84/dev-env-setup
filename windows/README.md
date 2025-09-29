@@ -60,6 +60,50 @@ The `config.json` file supports the following sections:
 1. Edit `config.json` to modify the applications list to match your needs
 2. Run the installation script
 
+### Git Configuration
+
+The setup automatically configures Git with your personal settings. **Important**: Before running the installation, you should update the Git configuration in `config.json` with your own information:
+
+```json
+{
+  "system": {
+    "git": {
+      "configureSSH": true,
+      "description": "Configure Git with SSH integration and custom settings",
+      "config": {
+        "global": {
+          "init": {
+            "defaultBranch": "main"
+          },
+          "user": {
+            "name": "Your Name Here",
+            "email": "your.email@example.com"
+          },
+          "core": {
+            "sshCommand": "C:/Windows/System32/OpenSSH/ssh.exe"
+          },
+          "push": {
+            "autoSetupRemote": true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Required Changes
+- **`user.name`**: Replace with your actual name
+- **`user.email`**: Replace with your actual email address
+
+#### Optional Settings
+- **`init.defaultBranch`**: Default branch name for new repositories (defaults to "main")
+- **`core.sshCommand`**: SSH command path (usually doesn't need changing)
+- **`push.autoSetupRemote`**: Automatically set up remote tracking (recommended: true)
+- **`configureSSH`**: Enable/disable SSH integration (recommended: true)
+
+The script will automatically apply these settings to your global Git configuration during installation.
+
 ## Default Applications
 
 ### Dependencies

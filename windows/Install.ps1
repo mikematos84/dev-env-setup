@@ -5,8 +5,7 @@ $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 . "$scriptPath\Test-CommandExists.ps1"
 . "$scriptPath\Set-SSHAgentToAutomaticStartup.ps1"
 . "$scriptPath\Write-SSHConfig.ps1"
-. "$scriptPath\Set-GitCoreSSHCommand.ps1"
-. "$scriptPath\Set-GitBashSSHConfig.ps1"
+. "$scriptPath\Set-GitConfiguration.ps1"
 . "$scriptPath\Validate-Configuration.ps1"
 
 Write-Host "=== Windows Developer Environment Setup ==="
@@ -156,9 +155,9 @@ if($config.system.sshAgent.enabled) {
     }
 }
 
-if($config.system.git.configureSSH -and (Test-CommandExists git) -eq $true){
-    Set-GitCoreSSHCommand
-    Set-GitBashSSHConfig
+# Configure Git settings from config
+if($config.system.git -and (Test-CommandExists git) -eq $true){
+    Set-GitConfiguration -Config $config
 }
 
 Write-Host "=== Installation Complete ==="
