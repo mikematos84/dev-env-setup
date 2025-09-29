@@ -4,8 +4,8 @@
   ],
   "dependencies": [
     {
-      "name": "git-with-openssh",
-      "description": "Git with OpenSSH support",
+      "name": "git",
+      "description": "Git",
       "required": true
     },
     {
@@ -58,7 +58,25 @@
       "autoStart": true
     },
     "git": {
-      "configureSSH": true
+      "configureSSH": true,
+      "description": "Configure Git with SSH integration and custom settings",
+      "config": {
+        "global": {
+          "init": {
+            "defaultBranch": "main"
+          },
+          "user": {
+            "name": "John Doe",
+            "email": "john.doe@example.com"
+          },
+          "core": {
+            "sshCommand": "C:/Windows/System32/OpenSSH/ssh.exe"
+          },
+          "push": {
+            "autoSetupRemote": true
+          }
+        }
+      }
     }
   }
 }
