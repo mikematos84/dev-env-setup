@@ -33,11 +33,11 @@ Start-WithElevation
 
 # Import Modules
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-. "$scriptPath\Test-CommandExists.ps1"
-. "$scriptPath\Set-SSHAgentToAutomaticStartup.ps1"
-. "$scriptPath\Write-SSHConfig.ps1"
-. "$scriptPath\Set-GitConfiguration.ps1"
-. "$scriptPath\Validate-Configuration.ps1"
+. "$scriptPath\actions\Test-CommandExists.ps1"
+. "$scriptPath\actions\Set-SSHAgentToAutomaticStartup.ps1"
+. "$scriptPath\actions\Write-SSHConfig.ps1"
+. "$scriptPath\actions\Set-GitConfiguration.ps1"
+. "$scriptPath\actions\Validate-Configuration.ps1"
 
 Write-Host "=== Windows Developer Environment Setup ==="
 

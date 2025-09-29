@@ -22,24 +22,24 @@ The setup requires OpenSSH for Windows. If not already installed, you may need t
 ### PowerShell Execution Policy
 The script will prompt you to set the execution policy to `RemoteSigned` for the current user. This is required for Scoop installation.
 
-## Pre-Install
+## Pre-Setup
 1. If you have not created any public or private keys, see the [SSH Configuration](../README.md/#ssh-configuration) for more information before moving onto the next step
 2. Place any public (`*.pub`) and private keys in the `.ssh` folder (`C:/Users/<username>/.ssh`). If the folder does not exist, create it. 
 
 > Make sure to place both the **public** and **private** keys within this folder. The script will look for any public (`*.pub`) keys within this folder and use their base name (`*`) to create the necessary SSH config file
 
 
-## Install
+## Setup
 
-Right click on **Install.ps1** in the **windows** folder and select **"Run with Powershell"**
+Right click on **Setup.ps1** in the **windows** folder and select **"Run with Powershell"**
 
-## Uninstall
+## Teardown
 
-Right click on **Uninstall.ps1** in the **windows** folder and select **"Run with Powershell"**
+Right click on **Teardown.ps1** in the **windows** folder and select **"Run with Powershell"**
 
 ## Configuration
 
-The installation process is now driven by a JSON configuration file (`config.json`) that allows you to customize which applications and tools are installed. This makes it easy to:
+The setup process is now driven by a JSON configuration file (`config.json`) that allows you to customize which applications and tools are installed. This makes it easy to:
 
 - Add or remove applications without modifying PowerShell scripts
 - Create different configurations for different environments
@@ -58,11 +58,11 @@ The `config.json` file supports the following sections:
 ### Customizing Your Setup
 
 1. Edit `config.json` to modify the applications list to match your needs
-2. Run the installation script
+2. Run the setup script
 
 ### Git Configuration
 
-The setup automatically configures Git with your personal settings. **Important**: Before running the installation, you should update the Git configuration in `config.json` with your own information:
+The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `config.json` with your own information:
 
 ```json
 {
@@ -102,7 +102,7 @@ The setup automatically configures Git with your personal settings. **Important*
 - **`push.autoSetupRemote`**: Automatically set up remote tracking (recommended: true)
 - **`configureSSH`**: Enable/disable SSH integration (recommended: true)
 
-The script will automatically apply these settings to your global Git configuration during installation.
+The script will automatically apply these settings to your global Git configuration during setup.
 
 ## Default Applications
 
@@ -139,7 +139,7 @@ The script will automatically apply these settings to your global Git configurat
 If you encounter "SSH Agent service not found" errors:
 1. Ensure OpenSSH is installed (see Prerequisites section)
 2. Restart your terminal after installing OpenSSH
-3. Run the installation script again
+3. Run the setup script again
 
 #### PowerShell Execution Policy Errors
 If you get execution policy errors:
@@ -147,11 +147,11 @@ If you get execution policy errors:
 2. Set execution policy: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force`
 3. Try running the script again
 
-#### Scoop Installation Fails
-If Scoop installation fails:
+#### Scoop Setup Fails
+If Scoop setup fails:
 1. Check your internet connection
 2. Try running PowerShell as Administrator
-3. Ensure Windows Defender or antivirus isn't blocking the installation
+3. Ensure Windows Defender or antivirus isn't blocking the setup
 
 #### Git SSH Configuration Issues
 If Git SSH doesn't work properly:

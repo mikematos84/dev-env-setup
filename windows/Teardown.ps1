@@ -2,10 +2,13 @@
 
 # Import Modules
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-. "$scriptPath\Test-CommandExists.ps1"
-. "$scriptPath\Validate-Configuration.ps1"
+. "$scriptPath\actions\Test-CommandExists.ps1"
+. "$scriptPath\actions\Validate-Configuration.ps1"
 
 Write-Host "=== Uninstall Windows Developer Environment Setup ==="
+Write-Host "This script will only remove packages and configurations that were installed by this dev-env-setup."
+Write-Host "Scoop and any other packages you installed independently will be preserved."
+Write-Host ""
 
 # Load Configuration
 function Get-Configuration {
@@ -26,26 +29,61 @@ function Get-Configuration {
     }
 }
 
-function Uninstall-App {
-    param(
-        [string]$appName,
-        [string]$description
-    )
-    
+function Get-InstalledPackages {
     try {
         $scoopListOutput = scoop list 2>$null
         [string[]] $installedApps = ($scoopListOutput | ForEach-Object { ($_ -split '\s+')[0] }) | Where-Object { $_ -ne "Name" -and $_ -ne "" }
+        return $installedApps
     } catch {
-        $installedApps = @()
+        return @()
+    }
+}
+
+function Test-PackageInstalledByScript {
+    param(
+        [string]$appName,
+        [PSCustomObject]$Config
+    )
+    
+    # Check if the package is in our configuration (either dependencies or devDependencies)
+    $allConfiguredPackages = @()
+    
+    if($Config.dependencies) {
+        $allConfiguredPackages += $Config.dependencies | ForEach-Object { $_.name }
     }
     
+    if($Config.devDependencies) {
+        $allConfiguredPackages += $Config.devDependencies | ForEach-Object { $_.name }
+    }
+    
+    return $allConfiguredPackages -contains $appName
+}
+
+function Uninstall-App {
+    param(
+        [string]$appName,
+        [string]$description,
+        [PSCustomObject]$Config
+    )
+    
+    $installedApps = Get-InstalledPackages
+    
     if(($null -ne $installedApps) -and ($installedApps.Contains($appName))){
-        Write-Host "Uninstalling $appName ($description)..."
-        scoop uninstall $appName
-        if($LASTEXITCODE -ne 0) {
-            Write-Warning "Failed to uninstall $appName"
+        # Check if this package was installed by our script
+        if(Test-PackageInstalledByScript -appName $appName -Config $Config) {
+            Write-Host "Uninstalling $appName ($description)..."
+            Write-Host "  -> Removing package installed by dev-env-setup..."
+            
+            scoop uninstall $appName
+            if($LASTEXITCODE -ne 0) {
+                Write-Warning "Failed to uninstall $appName - it may be required by other packages"
+                Write-Host "  -> You may need to manually uninstall $appName if it's no longer needed"
+            } else {
+                Write-Host "Successfully uninstalled $appName"
+            }
         } else {
-            Write-Host "Successfully uninstalled $appName"
+            Write-Host "$appName ($description) is installed but was not installed by this dev-env-setup"
+            Write-Host "  -> Skipping uninstall to preserve your other packages"
         }
     } else {
         Write-Host "$appName ($description) is not installed"
@@ -213,30 +251,18 @@ Write-Host "=== Uninstalling configured applications ==="
 # Uninstall devDependencies
 Write-Host "Uninstalling development dependencies..."
 foreach($devDep in $config.devDependencies) {
-    Uninstall-App -appName $devDep.name -description $devDep.description
+    Uninstall-App -appName $devDep.name -description $devDep.description -Config $config
 }
 
 # Uninstall dependencies
 Write-Host "Uninstalling dependencies..."
 foreach($dep in $config.dependencies) {
-    Uninstall-App -appName $dep.name -description $dep.description
+    Uninstall-App -appName $dep.name -description $dep.description -Config $config
 }
 
-# Ask about removing Scoop itself
-if((Test-CommandExists scoop) -eq $true){
-	Write-Host "=== Uninstalling Scoop ==="
-	$response = Read-Host "This will remove Scoop package manager. Continue? (y/N)"
-	if($response -eq 'y' -or $response -eq 'Y') {
-		scoop uninstall scoop
-		if($LASTEXITCODE -ne 0) {
-			Write-Warning "Failed to uninstall Scoop via scoop command. Attempting manual cleanup..."
-		}
-	} else {
-		Write-Host "Scoop uninstall cancelled."
-	}
-} else {
-	Write-Host "Scoop not found. Checking for manual cleanup..."
-}
+# Note: We do not uninstall Scoop itself as it may be used for other packages
+Write-Host "=== Scoop Package Manager ==="
+Write-Host "Scoop package manager is preserved as it may be used for other packages outside this dev-env-setup."
 
 # Revert Git configuration (only what we set)
 Revert-GitConfiguration -Config $config
@@ -247,34 +273,61 @@ Revert-SSHConfiguration
 # Revert Git Bash configuration (only what we set)
 Revert-GitBashConfiguration
 
-# Clean up Scoop directory
-if(Test-Path $HOME\scoop){
-	Write-Host "=== Removing Scoop directory ==="
-	Write-Host "Attempting to remove Scoop directory and all contents..."
-	
-	try {
-		# First, try to remove with more aggressive parameters
-		Remove-Item $HOME\scoop -Force -Recurse -ErrorAction Stop
-		Write-Host "Scoop directory removed successfully."
-	} catch {
-		Write-Warning "Failed to remove Scoop directory: $($_.Exception.Message)"
-		Write-Host "Attempting alternative cleanup method..."
-		
-		try {
-			# Try removing individual files and folders
-			Get-ChildItem $HOME\scoop -Recurse -Force | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
-			Remove-Item $HOME\scoop -Force -ErrorAction Stop
-			Write-Host "Scoop directory removed using alternative method."
-		} catch {
-			Write-Warning "Failed to remove Scoop directory completely."
-			Write-Host "Some files may be in use. You may need to:"
-			Write-Host "1. Close all terminal windows and PowerShell sessions"
-			Write-Host "2. Restart your computer"
-			Write-Host "3. Manually delete the directory: $HOME\scoop"
-		}
-	}
-} else {
-	Write-Host "No Scoop directory found at $HOME\scoop"
+# Clean up buckets we added (only if no other packages depend on them)
+Write-Host "=== Cleaning up Scoop buckets ==="
+try {
+    $bucketListOutput = scoop bucket list 2>$null
+    [string[]] $currentBuckets = ($bucketListOutput | ForEach-Object { ($_ -split '\s+')[0] }) | Where-Object { $_ -ne "Name" -and $_ -ne "" }
+    
+    foreach($bucket in $config.buckets) {
+        if($currentBuckets -and $currentBuckets.Contains($bucket)) {
+            Write-Host "Checking if bucket '$bucket' can be safely removed..."
+            
+            # Check if any packages are installed from this bucket
+            $bucketPackages = @()
+            try {
+                $bucketListOutput = scoop list 2>$null
+                $lines = $bucketListOutput -split "`n"
+                foreach($line in $lines) {
+                    if($line -match "^\s*(\w+)\s+.*$bucket") {
+                        $bucketPackages += $matches[1]
+                    }
+                }
+            } catch {
+                # If we can't determine packages, be conservative and don't remove bucket
+                Write-Host "  -> Cannot determine packages in bucket '$bucket', keeping it"
+                continue
+            }
+            
+            if($bucketPackages.Count -eq 0) {
+                Write-Host "  -> Removing bucket '$bucket' (no packages installed from it)"
+                scoop bucket rm $bucket 2>$null
+                if($LASTEXITCODE -eq 0) {
+                    Write-Host "  -> Successfully removed bucket '$bucket'"
+                } else {
+                    Write-Host "  -> Failed to remove bucket '$bucket' (may be in use)"
+                }
+            } else {
+                Write-Host "  -> Keeping bucket '$bucket' (packages still installed: $($bucketPackages -join ', '))"
+            }
+        } else {
+            Write-Host "Bucket '$bucket' not found or already removed"
+        }
+    }
+} catch {
+    Write-Warning "Failed to clean up buckets: $($_.Exception.Message)"
 }
 
+# Note: We do not remove the Scoop directory as it may contain other packages
+Write-Host "=== Scoop Directory ==="
+Write-Host "Scoop directory is preserved as it may contain other packages installed outside this dev-env-setup."
+
 Write-Host "=== Uninstall Complete ==="
+Write-Host ""
+Write-Host "Summary:"
+Write-Host "- Removed only packages that were installed by this dev-env-setup"
+Write-Host "- Preserved Scoop package manager and any other packages you installed independently"
+Write-Host "- Reverted Git, SSH, and Git Bash configurations to their previous state"
+Write-Host "- Cleaned up buckets only if no other packages depend on them"
+Write-Host ""
+Write-Host "Your system is now clean of this dev-env-setup while preserving your other tools."
