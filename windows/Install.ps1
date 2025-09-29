@@ -1,5 +1,36 @@
 # https://scoop.sh/
 
+# Check if running as administrator and elevate if necessary
+function Test-Administrator {
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Start-WithElevation {
+    if (-not (Test-Administrator)) {
+        Write-Host "This script requires administrator privileges to install packages." -ForegroundColor Yellow
+        Write-Host "Restarting with elevated privileges..." -ForegroundColor Yellow
+        
+        # Get the current script path and arguments
+        $scriptPath = $MyInvocation.MyCommand.Path
+        $arguments = "-ExecutionPolicy Bypass -File `"$scriptPath`""
+        
+        # Start a new PowerShell process with elevated privileges
+        try {
+            Start-Process PowerShell -Verb RunAs -ArgumentList $arguments -Wait
+            exit $LASTEXITCODE
+        } catch {
+            Write-Error "Failed to elevate privileges. Please run this script as administrator manually."
+            Write-Host "Right-click on PowerShell and select 'Run as Administrator', then run this script again." -ForegroundColor Red
+            exit 1
+        }
+    }
+}
+
+# Elevate to admin if needed
+Start-WithElevation
+
 # Import Modules
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 . "$scriptPath\Test-CommandExists.ps1"
@@ -70,9 +101,6 @@ function Install-App {
 # Load and validate configuration
 $config = Get-Configuration
 Validate-Configuration -config $config
-
-# Check if running as administrator
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 if((Test-CommandExists scoop) -eq $false){
   	Write-Host "Installing Scoop package manager..."
