@@ -52,6 +52,157 @@ function Uninstall-App {
     }
 }
 
+function Revert-GitConfiguration {
+    param(
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$Config
+    )
+    
+    Write-Host "=== Reverting Git Configuration ==="
+    
+    if (-not (Test-CommandExists git)) {
+        Write-Host "Git not found, skipping Git configuration revert"
+        return
+    }
+    
+    try {
+        # Only revert configurations that were set by our install script
+        if ($Config.system.git.config.global) {
+            $globalConfig = $Config.system.git.config.global
+            
+            # Revert user information
+            if ($globalConfig.user) {
+                if ($globalConfig.user.name) {
+                    Write-Host "Reverting Git user name..."
+                    git config --global --unset user.name 2>$null
+                }
+                if ($globalConfig.user.email) {
+                    Write-Host "Reverting Git user email..."
+                    git config --global --unset user.email 2>$null
+                }
+            }
+            
+            # Revert init settings
+            if ($globalConfig.init) {
+                if ($globalConfig.init.defaultBranch) {
+                    Write-Host "Reverting default branch setting..."
+                    git config --global --unset init.defaultBranch 2>$null
+                }
+            }
+            
+            # Revert core settings
+            if ($globalConfig.core) {
+                if ($globalConfig.core.sshCommand) {
+                    Write-Host "Reverting SSH command setting..."
+                    git config --global --unset core.sshCommand 2>$null
+                }
+            }
+            
+            # Revert push settings
+            if ($globalConfig.push) {
+                if ($globalConfig.push.autoSetupRemote) {
+                    Write-Host "Reverting push auto setup remote setting..."
+                    git config --global --unset push.autoSetupRemote 2>$null
+                }
+            }
+            
+            Write-Host "Git configuration reverted successfully"
+        } else {
+            Write-Host "No Git configuration found in config to revert"
+        }
+        
+    } catch {
+        Write-Warning "Failed to revert some Git configuration settings: $($_.Exception.Message)"
+    }
+}
+
+function Revert-SSHConfiguration {
+    Write-Host "=== Reverting SSH Configuration ==="
+    
+    $sshConfigPath = "$HOME\.ssh\config"
+    if (Test-Path $sshConfigPath) {
+        try {
+            $content = Get-Content $sshConfigPath -Raw
+            
+            # Check if our SSH config exists (look for our specific markers)
+            if ($content -match "AddKeysToAgent yes" -and $content -match "IdentitiesOnly yes") {
+                Write-Host "Removing our SSH configuration from $sshConfigPath..."
+                
+                # Remove our specific SSH config block
+                $newContent = $content -replace "(?s)Host \*\s*AddKeysToAgent yes\s*IdentitiesOnly yes\s*Host github\.com\s*Hostname github\.com\s*User git\s*", ""
+                
+                # Remove any IdentityFile entries we added
+                $lines = $newContent -split "`n"
+                $filteredLines = @()
+                $skipNext = $false
+                
+                foreach ($line in $lines) {
+                    if ($line -match "^\s*IdentityFile\s+~/.ssh/") {
+                        Write-Host "Removing IdentityFile entry: $($line.Trim())"
+                        continue
+                    }
+                    $filteredLines += $line
+                }
+                
+                $newContent = $filteredLines -join "`n"
+                
+                if ($newContent.Trim() -eq "") {
+                    # If file is empty after removal, delete it
+                    Remove-Item $sshConfigPath -Force
+                    Write-Host "SSH config file removed (was empty after cleanup)"
+                } else {
+                    # Write back the cleaned content
+                    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+                    [System.IO.File]::WriteAllText($sshConfigPath, $newContent, $utf8NoBom)
+                    Write-Host "SSH configuration reverted successfully"
+                }
+            } else {
+                Write-Host "No SSH configuration found that was set by this installer"
+            }
+        } catch {
+            Write-Warning "Failed to revert SSH configuration: $($_.Exception.Message)"
+        }
+    } else {
+        Write-Host "No SSH config file found"
+    }
+}
+
+function Revert-GitBashConfiguration {
+    Write-Host "=== Reverting Git Bash Configuration ==="
+    
+    $bashrcPath = "$HOME\.bashrc"
+    if (Test-Path $bashrcPath) {
+        try {
+            $content = Get-Content $bashrcPath -Raw
+            
+            # Check if our Git Bash SSH config exists
+            if ($content -match "Configure Git Bash to use Windows SSH agent") {
+                Write-Host "Removing Git Bash SSH configuration from .bashrc..."
+                
+                # Remove our specific SSH configuration block
+                $newContent = $content -replace "(?s)# Configure Git Bash to use Windows SSH agent.*?fi\s*\n", ""
+                
+                if ($newContent.Trim() -eq "") {
+                    # If file is empty after removal, delete it
+                    Remove-Item $bashrcPath -Force
+                    Write-Host ".bashrc file removed (was empty after cleanup)"
+                } else {
+                    # Write back the cleaned content
+                    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+                    [System.IO.File]::WriteAllText($bashrcPath, $newContent, $utf8NoBom)
+                    Write-Host "Git Bash SSH configuration reverted successfully"
+                }
+            } else {
+                Write-Host "No Git Bash SSH configuration found that was set by this installer"
+            }
+        } catch {
+            Write-Warning "Failed to revert .bashrc configuration: $($_.Exception.Message)"
+        }
+    } else {
+        Write-Host "No .bashrc file found"
+    }
+}
+
 # Load and validate configuration
 $config = Get-Configuration
 Validate-Configuration -config $config
@@ -87,69 +238,14 @@ if((Test-CommandExists scoop) -eq $true){
 	Write-Host "Scoop not found. Checking for manual cleanup..."
 }
 
-# Clean up Git configuration
-Write-Host "=== Cleaning up Git configuration ==="
-if((Test-CommandExists git) -eq $true){
-    Write-Host "Resetting Git global configuration..."
-    try {
-        # Reset Git configuration to defaults
-        git config --global --unset user.name 2>$null
-        git config --global --unset user.email 2>$null
-        git config --global --unset init.defaultBranch 2>$null
-        git config --global --unset core.sshCommand 2>$null
-        git config --global --unset push.autoSetupRemote 2>$null
-        Write-Host "Git configuration reset successfully"
-    } catch {
-        Write-Warning "Failed to reset some Git configuration settings: $($_.Exception.Message)"
-    }
-} else {
-    Write-Host "Git not found, skipping Git configuration cleanup"
-}
+# Revert Git configuration (only what we set)
+Revert-GitConfiguration -Config $config
 
-# Clean up SSH configuration
-Write-Host "=== Cleaning up SSH configuration ==="
-$sshConfigPath = "$HOME\.ssh\config"
-if(Test-Path $sshConfigPath){
-    Write-Host "Removing SSH config file..."
-    try {
-        Remove-Item $sshConfigPath -Force
-        Write-Host "SSH config file removed successfully"
-    } catch {
-        Write-Warning "Failed to remove SSH config file: $($_.Exception.Message)"
-    }
-} else {
-    Write-Host "No SSH config file found"
-}
+# Revert SSH configuration (only what we set)
+Revert-SSHConfiguration
 
-# Clean up Git Bash configuration
-Write-Host "=== Cleaning up Git Bash configuration ==="
-$bashrcPath = "$HOME\.bashrc"
-if(Test-Path $bashrcPath){
-    Write-Host "Removing Git Bash SSH configuration from .bashrc..."
-    try {
-        $content = Get-Content $bashrcPath -Raw
-        if($content -match "Configure Git Bash to use Windows SSH agent"){
-            # Remove our SSH configuration block
-            $newContent = $content -replace "(?s)# Configure Git Bash to use Windows SSH agent.*?fi\s*\n", ""
-            if($newContent.Trim() -eq ""){
-                # If file is empty after removal, delete it
-                Remove-Item $bashrcPath -Force
-                Write-Host ".bashrc file removed (was empty after cleanup)"
-            } else {
-                # Write back the cleaned content
-                $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-                [System.IO.File]::WriteAllText($bashrcPath, $newContent, $utf8NoBom)
-                Write-Host "Git Bash SSH configuration removed from .bashrc"
-            }
-        } else {
-            Write-Host "No Git Bash SSH configuration found in .bashrc"
-        }
-    } catch {
-        Write-Warning "Failed to clean up .bashrc: $($_.Exception.Message)"
-    }
-} else {
-    Write-Host "No .bashrc file found"
-}
+# Revert Git Bash configuration (only what we set)
+Revert-GitBashConfiguration
 
 # Clean up Scoop directory
 if(Test-Path $HOME\scoop){
