@@ -19,5 +19,5 @@ apps:
 
 git:
   user:
-    name: "Default User"
-    email: "default@example.com"
+    name: "Your Name"
+    email: "your_name@example.com"
