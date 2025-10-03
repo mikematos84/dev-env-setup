@@ -54,7 +54,7 @@ function Set-GitConfiguration {
             
             Write-Host "Git global configuration completed successfully"
         } else {
-            Write-Warning "No global Git configuration found in config.json"
+            Write-Warning "No global Git configuration found in config.yaml"
         }
         
         # Configure SSH-related settings if configureSSH is enabled

@@ -43,10 +43,17 @@ Write-Host "=== Windows Developer Environment Setup ==="
 
 # Load Configuration
 function Get-Configuration {
-    $configPath = Join-Path $scriptPath "config.json"
+    $configPath = Join-Path $scriptPath "config.yaml"
     if (Test-Path $configPath) {
         try {
-            $config = Get-Content $configPath -Raw | ConvertFrom-Json
+            # Ensure powershell-yaml module is available
+            if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
+                Write-Host "Installing powershell-yaml module..."
+                Install-Module -Name powershell-yaml -Force -Scope CurrentUser -AllowClobber
+            }
+            
+            Import-Module powershell-yaml -Force
+            $config = Get-Content $configPath -Raw | ConvertFrom-Yaml
             Write-Host "Configuration loaded successfully from $configPath"
             return $config
         } catch {
@@ -55,10 +62,11 @@ function Get-Configuration {
         }
     } else {
         Write-Error "Configuration file not found: $configPath"
-        Write-Host "Please ensure config.json exists in the windows directory."
+        Write-Host "Please ensure config.yaml exists in the windows directory."
         exit 1
     }
 }
+
 
 function Install-App {
     param(
