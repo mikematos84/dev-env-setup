@@ -34,17 +34,29 @@ fi
 
 echo "📦 Using installed config: $INSTALLED_CONFIG"
 
-# --- Uninstall apps ---
-APPS=$(yq e '.apps[] | select(.required == true) | .name' "$INSTALLED_CONFIG")
-if [[ -n "$APPS" ]]; then
-  echo "🗑 Uninstalling apps: $APPS"
-  brew uninstall --cask $APPS || true
-fi
+# --- Uninstall packages ---
+echo "🗑 Uninstalling packages..."
 
-# --- Uninstall extra packages ---
-echo "🗑 Uninstalling extra packages..."
-brew uninstall yarn pnpm || true
-brew uninstall nvm || true
+# Get all packages that were installed
+PACKAGES=$(yq e '.packages[]' "$INSTALLED_CONFIG")
+
+if [[ -n "$PACKAGES" ]]; then
+  echo "🗑 Uninstalling packages: $PACKAGES"
+  
+  # Uninstall packages using Homebrew
+  for package in $PACKAGES; do
+    echo "  Uninstalling: $package"
+    if [[ "$package" =~ ^(iterm2|visual-studio-code|slack|zoom|microsoft-teams|docker)$ ]]; then
+      # Uninstall as cask (GUI applications)
+      brew uninstall --cask "$package" || echo "  ⚠️ Failed to uninstall $package (cask)"
+    else
+      # Uninstall as formula (command line tools)
+      brew uninstall "$package" || echo "  ⚠️ Failed to uninstall $package (formula)"
+    fi
+  done
+else
+  echo "ℹ️ No packages to uninstall"
+fi
 
 # --- Reset git config ---
 echo "⚙️ Resetting git config"
