@@ -78,8 +78,8 @@ system:
         init:
           defaultBranch: main
         user:
-          name: Your Name Here
-          email: your.email@example.com
+          name: John Doe # Replace with your name
+          email: john.doe@example.com # Replace with your email
         core:
           sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
         push:
