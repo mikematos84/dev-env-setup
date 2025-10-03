@@ -1,0 +1,67 @@
+# Thie is the global git configuration that will be applied to all platforms
+git: 
+  global:
+    init:
+      defaultBranch: main 
+    user:
+      name: Your Name
+      email: your_email@example.com
+    push:
+      autoSetupRemote: true
+
+# Shared package across package managers. 
+# These packages share the same names across the used package managers.
+packages:
+  # Runtime Managers
+  - nvm
+  # Package Managers
+  - yarn
+  - pnpm
+  # Code Editos
+  - zed
+  - cursor
+  # Security Tools
+  - mkcert
+  # Communication Tools
+  - slack
+  - zoom
+  - microsoft-teams
+
+# Platform specific configurations
+platforms:
+  # OS X
+  osx:
+    name: Max OSX
+    description: "Mac OSX platform developer setup"
+    packageManager: homebrew
+    apps:
+    # Packages available from https://brew.sh
+    packages:
+      # Terminals
+      - iterm2
+      # Code Editors
+      - visual-studio-code
+
+  # Windows
+  windows:
+    name: Windows
+    description: "Windows platform developer setup"
+    packageManager: scoop
+    # Packages available from https://scoop.sh
+    packages:
+      - vscode
+    system:
+      sshAgent:
+        enabled: true
+        autoStart: true
+      git:
+        configureSSH: true
+        global:
+          core:
+            sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
+
+
+
+
+
+      
