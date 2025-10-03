@@ -5,24 +5,28 @@ dependencies:
   - name: git
     description: Git
     required: true
-  - name: sudo
-    description: Elevated privileges utility
-    required: false
 
 devDependencies:
+  #  Runtime Managers
   - name: nvm
     description: Node Version Manager
     required: true
     postInstall: nvm install lts; nvm use lts
+  
+  #  Security Tools
   - name: mkcert
     description: Local development certificates
     required: false
+  
+  #  Package Managers
   - name: yarn
     description: Node.js dependency manager
-    required: false
+    required: true
   - name: pnpm
     description: Fast, disk space efficient package manager for Node.js
     required: true
+
+  #  Code Editors
   - name: vscode
     description: Visual Studio Code editor
     required: false
@@ -31,8 +35,19 @@ devDependencies:
     required: false
   - name: cursor
     description: Cursor AI-powered code editor
-    required: true
+    required: false
 
+  # Communication Tools
+  - name: slack
+    description: Slack messaging app
+    required: false
+  - name: zoom
+    description: Zoom video conferencing app
+    required: false
+  - name: microsoft-teams
+    description: Microsoft Teams messaging app
+    required: false
+  
 system:
   sshAgent:
     enabled: true
@@ -45,8 +60,8 @@ system:
         init:
           defaultBranch: main
         user:
-          name: John Doe
-          email: john.doe@example.com
+          name: John Doe # Replace with your name
+          email: john.doe@example.com # Replace with your email
         core:
           sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
         push:

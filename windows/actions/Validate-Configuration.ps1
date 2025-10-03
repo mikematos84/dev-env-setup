@@ -9,19 +9,19 @@ function Validate-Configuration {
     # Validate required sections
     if(-not $config.buckets) {
         $errors += "Missing 'buckets' section in configuration"
-    } elseif($config.buckets -isnot [array]) {
+    } elseif($config.buckets -isnot [array] -and $config.buckets.GetType().Name -notlike "*List*") {
         $errors += "'buckets' must be an array"
     }
     
     if(-not $config.dependencies) {
         $errors += "Missing 'dependencies' section in configuration"
-    } elseif($config.dependencies -isnot [array]) {
+    } elseif($config.dependencies -isnot [array] -and $config.dependencies.GetType().Name -notlike "*List*") {
         $errors += "'dependencies' must be an array"
     }
     
     if(-not $config.devDependencies) {
         $errors += "Missing 'devDependencies' section in configuration"
-    } elseif($config.devDependencies -isnot [array]) {
+    } elseif($config.devDependencies -isnot [array] -and $config.devDependencies.GetType().Name -notlike "*List*") {
         $errors += "'devDependencies' must be an array"
     }
     
