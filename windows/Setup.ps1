@@ -1,35 +1,38 @@
 # https://scoop.sh/
 
-# Check if running as administrator and elevate if necessary
+# Handle command line parameters
+param(
+    [switch]$ConfigureSSHAgent
+)
+
+# Check if running as administrator (for optional admin-only features)
 function Test-Administrator {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-function Start-WithElevation {
+# Function to request admin privileges for specific operations
+function Request-AdminForSSHAgent {
     if (-not (Test-Administrator)) {
-        Write-Host "This script requires administrator privileges to install packages." -ForegroundColor Yellow
-        Write-Host "Restarting with elevated privileges..." -ForegroundColor Yellow
+        Write-Host "Restarting with elevated privileges for SSH Agent configuration..." -ForegroundColor Yellow
         
         # Get the current script path and arguments
         $scriptPath = $MyInvocation.MyCommand.Path
-        $arguments = "-ExecutionPolicy Bypass -File `"$scriptPath`""
+        $arguments = "-ExecutionPolicy Bypass -File `"$scriptPath`" -ConfigureSSHAgent"
         
         # Start a new PowerShell process with elevated privileges
         try {
             Start-Process PowerShell -Verb RunAs -ArgumentList $arguments -Wait
-            exit $LASTEXITCODE
+            return $true
         } catch {
-            Write-Error "Failed to elevate privileges. Please run this script as administrator manually."
-            Write-Host "Right-click on PowerShell and select 'Run as Administrator', then run this script again." -ForegroundColor Red
-            exit 1
+            Write-Error "Failed to elevate privileges for SSH Agent configuration."
+            Write-Host "You can configure SSH Agent manually later by running this script as administrator." -ForegroundColor Yellow
+            return $false
         }
     }
+    return $true
 }
-
-# Elevate to admin if needed
-Start-WithElevation
 
 # Import Modules
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -43,10 +46,17 @@ Write-Host "=== Windows Developer Environment Setup ==="
 
 # Load Configuration
 function Get-Configuration {
-    $configPath = Join-Path $scriptPath "config.json"
+    $configPath = Join-Path $scriptPath "config.yaml"
     if (Test-Path $configPath) {
         try {
-            $config = Get-Content $configPath -Raw | ConvertFrom-Json
+            # Ensure powershell-yaml module is available
+            if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
+                Write-Host "Installing powershell-yaml module..."
+                Install-Module -Name powershell-yaml -Force -Scope CurrentUser -AllowClobber
+            }
+            
+            Import-Module powershell-yaml -Force
+            $config = Get-Content $configPath -Raw | ConvertFrom-Yaml
             Write-Host "Configuration loaded successfully from $configPath"
             return $config
         } catch {
@@ -55,10 +65,11 @@ function Get-Configuration {
         }
     } else {
         Write-Error "Configuration file not found: $configPath"
-        Write-Host "Please ensure config.json exists in the windows directory."
+        Write-Host "Please ensure config.yaml exists in the windows directory."
         exit 1
     }
 }
+
 
 function Install-App {
     param(
@@ -101,20 +112,33 @@ function Install-App {
 $config = Get-Configuration
 Validate-Configuration -config $config
 
+# If ConfigureSSHAgent parameter is passed, only configure SSH Agent and exit
+if($ConfigureSSHAgent) {
+    Write-Host "Configuring SSH Agent only..." -ForegroundColor Cyan
+    if($config.system.sshAgent.enabled) {
+        $sshAgentService = Get-Service -Name "ssh-agent" -ErrorAction SilentlyContinue
+        if($sshAgentService) {
+            Write-Host "Configuring SSH Agent..."
+            if($config.system.sshAgent.autoStart) {
+                Set-SSHAgentToAutomaticStartup
+            }
+            Write-SSHConfig
+        } else {
+            Write-Warning "SSH Agent service not found. SSH configuration skipped."
+        }
+    }
+    Write-Host "SSH Agent configuration complete." -ForegroundColor Green
+    exit 0
+}
+
 if((Test-CommandExists scoop) -eq $false){
   	Write-Host "Installing Scoop package manager..."
-  	Write-Host "This will set execution policy to RemoteSigned for current user."
-  	$response = Read-Host "Continue? (y/N)"
-  	if($response -eq 'y' -or $response -eq 'Y') {
-  		Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-  		Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-  		if($LASTEXITCODE -ne 0) {
-  			Write-Error "Failed to install Scoop. Please run as administrator or check your internet connection."
-  			exit 1
-  		}
-  	} else {
-  		Write-Host "Scoop installation cancelled."
-  		exit 0
+  	Write-Host "Setting execution policy to RemoteSigned for current user..."
+  	Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+  	Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+  	if($LASTEXITCODE -ne 0) {
+  		Write-Error "Failed to install Scoop. Please run as administrator or check your internet connection."
+  		exit 1
   	}
 }
   	
@@ -132,7 +156,6 @@ foreach($dep in $config.dependencies) {
     }
 }
 
-Write-Host "Updating Scoop..."
 scoop update scoop
 if($LASTEXITCODE -ne 0) {
 	Write-Warning "Failed to update Scoop. Continuing with installation..."
@@ -175,7 +198,13 @@ if($config.system.sshAgent.enabled) {
     if($sshAgentService) {
         Write-Host "Configuring SSH Agent..."
         if($config.system.sshAgent.autoStart) {
-            Set-SSHAgentToAutomaticStartup
+            # Try to configure SSH Agent, auto-elevate if needed
+            if(Test-Administrator) {
+                Set-SSHAgentToAutomaticStartup
+            } else {
+                Write-Host "SSH Agent configuration requires administrator privileges. Auto-elevating..." -ForegroundColor Yellow
+                Request-AdminForSSHAgent
+            }
         }
         Write-SSHConfig
     } else {

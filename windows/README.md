@@ -10,6 +10,7 @@ This setup makes use of the Windows-based package manager, [Scoop](https://scoop
 - PowerShell 5.1 or later
 - Administrator privileges (for some operations)
 - Internet connection
+- PowerShell Gallery access (for powershell-yaml module installation)
 
 ### OpenSSH Installation
 The setup requires OpenSSH for Windows. If not already installed, you may need to install it manually:
@@ -21,6 +22,9 @@ The setup requires OpenSSH for Windows. If not already installed, you may need t
 
 ### PowerShell Execution Policy
 The script will prompt you to set the execution policy to `RemoteSigned` for the current user. This is required for Scoop installation.
+
+### PowerShell Modules
+The setup script will automatically install the `powershell-yaml` module if it's not already available. This module is required for parsing the YAML configuration file.
 
 ## Pre-Setup
 1. If you have not created any public or private keys, see the [SSH Configuration](../README.md/#ssh-configuration) for more information before moving onto the next step
@@ -39,7 +43,7 @@ Right click on **Teardown.ps1** in the **windows** folder and select **"Run with
 
 ## Configuration
 
-The setup process is now driven by a JSON configuration file (`config.json`) that allows you to customize which applications and tools are installed. This makes it easy to:
+The setup process is now driven by a YAML configuration file (`config.yaml`) that allows you to customize which applications and tools are installed. This makes it easy to:
 
 - Add or remove applications without modifying PowerShell scripts
 - Create different configurations for different environments
@@ -48,7 +52,7 @@ The setup process is now driven by a JSON configuration file (`config.json`) tha
 
 ### Configuration Structure
 
-The `config.json` file supports the following sections:
+The `config.yaml` file supports the following sections:
 
 - **`buckets`**: Array of Scoop buckets to add (e.g., "extras", "main")
 - **`dependencies`**: Required system dependencies (supports optional `category` field for grouping)
@@ -57,39 +61,29 @@ The `config.json` file supports the following sections:
 
 ### Customizing Your Setup
 
-1. Edit `config.json` to modify the applications list to match your needs
+1. Edit `config.yaml` to modify the applications list to match your needs
 2. Run the setup script
 
 ### Git Configuration
 
-The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `config.json` with your own information:
+The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `config.yaml` with your own information:
 
-```json
-{
-  "system": {
-    "git": {
-      "configureSSH": true,
-      "description": "Configure Git with SSH integration and custom settings",
-      "config": {
-        "global": {
-          "init": {
-            "defaultBranch": "main"
-          },
-          "user": {
-            "name": "Your Name Here",
-            "email": "your.email@example.com"
-          },
-          "core": {
-            "sshCommand": "C:/Windows/System32/OpenSSH/ssh.exe"
-          },
-          "push": {
-            "autoSetupRemote": true
-          }
-        }
-      }
-    }
-  }
-}
+```yaml
+system:
+  git:
+    configureSSH: true
+    description: Configure Git with SSH integration and custom settings
+    config:
+      global:
+        init:
+          defaultBranch: main
+        user:
+          name: Your Name Here
+          email: your.email@example.com
+        core:
+          sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
+        push:
+          autoSetupRemote: true
 ```
 
 #### Required Changes

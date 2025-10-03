@@ -12,10 +12,17 @@ Write-Host ""
 
 # Load Configuration
 function Get-Configuration {
-    $configPath = Join-Path $scriptPath "config.json"
+    $configPath = Join-Path $scriptPath "config.yaml"
     if (Test-Path $configPath) {
         try {
-            $config = Get-Content $configPath -Raw | ConvertFrom-Json
+            # Ensure powershell-yaml module is available
+            if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
+                Write-Host "Installing powershell-yaml module..."
+                Install-Module -Name powershell-yaml -Force -Scope CurrentUser -AllowClobber
+            }
+            
+            Import-Module powershell-yaml -Force
+            $config = Get-Content $configPath -Raw | ConvertFrom-Yaml
             Write-Host "Configuration loaded successfully from $configPath"
             return $config
         } catch {
@@ -24,17 +31,41 @@ function Get-Configuration {
         }
     } else {
         Write-Error "Configuration file not found: $configPath"
-        Write-Host "Please ensure config.json exists in the windows directory."
+        Write-Host "Please ensure config.yaml exists in the windows directory."
         exit 1
     }
 }
 
+
 function Get-InstalledPackages {
     try {
-        $scoopListOutput = scoop list 2>$null
-        [string[]] $installedApps = ($scoopListOutput | ForEach-Object { ($_ -split '\s+')[0] }) | Where-Object { $_ -ne "Name" -and $_ -ne "" }
+        $scoopApps = scoop list 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Failed to get scoop list. Scoop may not be installed or accessible."
+            return @()
+        }
+        
+        # Handle both object and string output
+        [string[]] $installedApps = @()
+        
+        if ($scoopApps -is [array]) {
+            # If it's an array of objects, extract the Name property
+            foreach ($app in $scoopApps) {
+                if ($app -and $app.Name) {
+                    $installedApps += $app.Name
+                }
+            }
+        } else {
+            # If it's a single object, extract its Name property
+            if ($scoopApps -and $scoopApps.Name) {
+                $installedApps += $scoopApps.Name
+            }
+        }
+        
+        Write-Host "Found installed packages: $($installedApps -join ', ')" -ForegroundColor Cyan
         return $installedApps
     } catch {
+        Write-Warning "Error getting installed packages: $($_.Exception.Message)"
         return @()
     }
 }
@@ -66,27 +97,33 @@ function Uninstall-App {
         [PSCustomObject]$Config
     )
     
+    Write-Host "Checking $appName ($description)..." -ForegroundColor Yellow
+    
     $installedApps = Get-InstalledPackages
     
     if(($null -ne $installedApps) -and ($installedApps.Contains($appName))){
+        Write-Host "  -> $appName is currently installed" -ForegroundColor Green
+        
         # Check if this package was installed by our script
         if(Test-PackageInstalledByScript -appName $appName -Config $Config) {
-            Write-Host "Uninstalling $appName ($description)..."
-            Write-Host "  -> Removing package installed by dev-env-setup..."
+            Write-Host "  -> $appName was installed by this dev-env-setup" -ForegroundColor Cyan
+            Write-Host "Uninstalling $appName ($description)..." -ForegroundColor Red
             
-            scoop uninstall $appName
+            # Try to uninstall with force flag to handle dependencies
+            scoop uninstall $appName --purge
             if($LASTEXITCODE -ne 0) {
                 Write-Warning "Failed to uninstall $appName - it may be required by other packages"
                 Write-Host "  -> You may need to manually uninstall $appName if it's no longer needed"
+                Write-Host "  -> Try running: scoop uninstall $appName --purge" -ForegroundColor Yellow
             } else {
-                Write-Host "Successfully uninstalled $appName"
+                Write-Host "  -> Successfully uninstalled $appName" -ForegroundColor Green
             }
         } else {
-            Write-Host "$appName ($description) is installed but was not installed by this dev-env-setup"
-            Write-Host "  -> Skipping uninstall to preserve your other packages"
+            Write-Host "  -> $appName is installed but was not installed by this dev-env-setup" -ForegroundColor Yellow
+            Write-Host "  -> Skipping uninstall to preserve your other packages" -ForegroundColor Yellow
         }
     } else {
-        Write-Host "$appName ($description) is not installed"
+        Write-Host "  -> $appName ($description) is not installed" -ForegroundColor Gray
     }
 }
 
@@ -244,6 +281,33 @@ function Revert-GitBashConfiguration {
 # Load and validate configuration
 $config = Get-Configuration
 Validate-Configuration -config $config
+
+# Show what packages are currently installed vs what we expect to find
+Write-Host "=== Current System Status ===" -ForegroundColor Cyan
+$installedApps = Get-InstalledPackages
+if ($installedApps.Count -eq 0) {
+    Write-Host "No packages are currently installed via Scoop." -ForegroundColor Yellow
+} else {
+    Write-Host "Currently installed packages: $($installedApps.Count)" -ForegroundColor Green
+}
+
+# Show what packages we expect to find based on config
+$expectedPackages = @()
+if($config.dependencies) {
+    $expectedPackages += $config.dependencies | ForEach-Object { $_.name }
+}
+if($config.devDependencies) {
+    $expectedPackages += $config.devDependencies | ForEach-Object { $_.name }
+}
+
+Write-Host "Packages configured in this dev-env-setup: $($expectedPackages.Count)" -ForegroundColor Cyan
+Write-Host "Expected packages: $($expectedPackages -join ', ')" -ForegroundColor Gray
+Write-Host ""
+# Proceed with uninstall - only packages installed by this dev-env-setup will be removed
+Write-Host "Proceeding with uninstall..." -ForegroundColor Green
+Write-Host "Only packages installed by this dev-env-setup will be removed." -ForegroundColor Yellow
+Write-Host "Packages installed independently will be preserved." -ForegroundColor Yellow
+Write-Host ""
 
 # Uninstall applications first
 Write-Host "=== Uninstalling configured applications ==="
