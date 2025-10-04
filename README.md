@@ -69,7 +69,7 @@ packages:
 configs:
   git:
     run: |
-      git config --global user.email "your@example.com"
+      git config --global user.email "you@example.com"
       git config --global user.name "Your Name"
       git config --global init.defaultBranch main
       git config --global push.autoSetupRemote true
@@ -115,8 +115,8 @@ packages:
 configs:
   git:
     run: |
+      git config --global user.email "your@example.com"
       git config --global user.name "Your Name"
-      git config --global user.email "your_email@example.com"
       git config --global init.defaultBranch main
 ```
 
@@ -168,8 +168,8 @@ You can find more information on generating ssh keys [here](https://docs.github.
 Generate an ssh key (if you do not have one already)
 
 ```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-# legacy ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+ssh-keygen -t ed25519 -C "you@example.com"
+# legacy ssh-keygen -t rsa -b 4096 -C "you@example.com"
 ```
 
 Add key to ssh agent
