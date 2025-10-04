@@ -91,8 +91,8 @@ packages:
 configs:
   git:
     run: |
+      git config --global user.email "you@example.com"
       git config --global user.name "Your Name"
-      git config --global user.email "your_email@example.com"
       git config --global init.defaultBranch main
       git config --global push.autoSetupRemote true
 ```
@@ -128,8 +128,8 @@ The setup automatically configures Git with your personal settings. **Important*
 configs:
   git:
     run: |
-      git config --global user.name "John Doe"  # Replace with your name
-      git config --global user.email "john.doe@example.com"  # Replace with your email
+      git config --global user.email "you@example.com"  # Replace with your email
+      git config --global user.name "Your Name"  # Replace with your name
       git config --global init.defaultBranch main
       git config --global push.autoSetupRemote true
 
