@@ -20,8 +20,8 @@ packages:
 configs:
   git:
     run: |
-      git config --global user.name "Your Name" # Replace with your name
-      git config --global user.email "your_email@example.com" # Replace with your email
+      git config --global user.email "your@example.com"
+      git config --global user.name "Your Name"
       git config --global init.defaultBranch main
       git config --global push.autoSetupRemote true
 
