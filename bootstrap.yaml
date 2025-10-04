@@ -1,13 +1,6 @@
 # Shared package across package managers. 
 # These packages share the same names across the used package managers.
 packages:
-  # Git with global configuration
-  - name: git
-    run: |
-      git config --global user.name "Your Name" # Replace with your name
-      git config --global user.email "your_email@example.com" # Replace with your email
-      git config --global init.defaultBranch main
-      git config --global push.autoSetupRemote true
   # Runtime Managers
   - nvm
   # Package Managers
@@ -23,6 +16,15 @@ packages:
   - zoom
   - microsoft-teams
 
+# Global configurations
+configs:
+  git:
+    run: |
+      git config --global user.name "Your Name" # Replace with your name
+      git config --global user.email "your_email@example.com" # Replace with your email
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
+
 # Platform specific configurations
 platforms:
   # OS X
@@ -33,16 +35,14 @@ platforms:
     apps:
     # Packages available from https://brew.sh
     packages:
-      # Version Control
-      - name: git
-        install: false # Git is pre-installed on macOS, just configure it
-        run: |
-          # macOS-specific Git configuration (if needed)
-          # Global config will be applied first
       # Terminals
       - iterm2
       # Code Editors
       - visual-studio-code
+    configs:
+      git:
+        run: |
+          git config --global core.editor "code --wait"
 
   # Windows
   windows:
@@ -51,16 +51,17 @@ platforms:
     packageManager: scoop
     # Packages available from https://scoop.sh
     packages:
-      # Version Control
-      - name: git
-        run: |
-          # Windows-specific Git configuration
-          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
       # Code Editors
       - vscode
+    buckets:
+      - extras
     sshAgent:
       enabled: true
       autoStart: true
+    configs:
+      git:
+        run: |
+          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
 
 
 
