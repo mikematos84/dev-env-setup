@@ -55,29 +55,48 @@ All configuration is centralized in the `bootstrap.yaml` file in the project roo
 ```yaml
 # Global packages (applied to all platforms)
 packages:
-  - name: git
-    run: |
-      git config --global user.name "Your Name"
-      git config --global user.email "your_email@example.com"
-  - vscode
+  - nvm
+  - yarn
+  - pnpm
+  - zed
+  - cursor
+  - mkcert
   - slack
+  - zoom
+  - microsoft-teams
+
+# Global configurations
+configs:
+  git:
+    run: |
+      git config --global user.email "your@example.com"
+      git config --global user.name "Your Name"
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
 
 # Platform-specific configurations
 platforms:
   windows:
     packages:
-      - name: git
-        run: |
-          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
+      - vscode
+    buckets:
+      - extras
     sshAgent:
       enabled: true
       autoStart: true
+    configs:
+      git:
+        run: |
+          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
   
   osx:
     packages:
-      - name: git
-        install: false  # Git is pre-installed on macOS
-    # macOS-specific settings...
+      - iterm2
+      - visual-studio-code
+    configs:
+      git:
+        run: |
+          git config --global core.editor "code --wait"
 ```
 
 ### Package Types
@@ -87,16 +106,32 @@ platforms:
 packages:
   - vscode
   - slack
+  - nvm
+  - yarn
 ```
 
-**Advanced packages** (with configuration):
+**Configuration sections** (separate from packages):
 ```yaml
-packages:
-  - name: git
-    install: false  # Skip installation, just configure
+configs:
+  git:
     run: |
       git config --global user.name "Your Name"
       git config --global user.email "your_email@example.com"
+      git config --global init.defaultBranch main
+```
+
+**Platform-specific packages**:
+```yaml
+platforms:
+  windows:
+    packages:
+      - vscode
+    buckets:
+      - extras
+  osx:
+    packages:
+      - iterm2
+      - visual-studio-code
 ```
 
 ### Customization

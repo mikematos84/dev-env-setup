@@ -70,23 +70,48 @@ The `bootstrap.yaml` file supports the following sections:
 
 ### Package Configuration
 
-Packages can be configured in two ways:
+The configuration uses a simple structure with separate sections for packages and configurations:
 
 **Simple packages** (just install):
 ```yaml
 packages:
-  - vscode
+  - nvm
+  - yarn
+  - pnpm
+  - zed
+  - cursor
+  - mkcert
   - slack
+  - zoom
+  - microsoft-teams
 ```
 
-**Advanced packages** (with configuration):
+**Configuration sections** (separate from packages):
 ```yaml
-packages:
-  - name: git
-    install: false  # Skip installation, just configure
+configs:
+  git:
     run: |
       git config --global user.name "Your Name"
       git config --global user.email "your_email@example.com"
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
+```
+
+**Platform-specific packages and configs**:
+```yaml
+platforms:
+  windows:
+    packages:
+      - vscode
+    buckets:
+      - extras
+    sshAgent:
+      enabled: true
+      autoStart: true
+    configs:
+      git:
+        run: |
+          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
 ```
 
 ### Customizing Your Setup
@@ -99,8 +124,9 @@ packages:
 The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `bootstrap.yaml` with your own information:
 
 ```yaml
-packages:
-  - name: git
+# Global Git configuration
+configs:
+  git:
     run: |
       git config --global user.name "John Doe"  # Replace with your name
       git config --global user.email "john.doe@example.com"  # Replace with your email
@@ -109,8 +135,8 @@ packages:
 
 platforms:
   windows:
-    packages:
-      - name: git
+    configs:
+      git:
         run: |
           git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
 ```
@@ -214,11 +240,11 @@ packages:
   - your-new-package
 ```
 
-Or for packages with configuration:
+For packages that need configuration, add them to the configs section:
 
 ```yaml
-packages:
-  - name: your-new-package
+configs:
+  your-new-package:
     run: |
       # Configuration commands
       your-package --configure
@@ -232,7 +258,9 @@ To add Windows-specific packages:
 platforms:
   windows:
     packages:
-      - name: windows-specific-tool
+      - windows-specific-tool
+    configs:
+      windows-specific-tool:
         run: |
           # Windows-specific configuration
 ```
