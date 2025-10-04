@@ -6,9 +6,11 @@ This repository contains scripts for quick and easy setup of your local machine 
 
 - **Cross-platform**: Works on both Windows and macOS
 - **Centralized Configuration**: Single `bootstrap.yaml` file for all platforms
-- **Smart Package Management**: Handles both installation and configuration
+- **Smart Package Management**: Handles both installation and configuration with intelligent updates
 - **Flexible Configuration**: Support for simple packages and advanced configuration
 - **Easy Customization**: Modify packages and settings without touching scripts
+- **Intelligent Installation**: Checks for existing packages and updates them instead of reinstalling
+- **Bucket Management**: Automatically checks and adds required package manager buckets
 
 ## Supported Platforms
 
@@ -166,6 +168,8 @@ dev-env-setup/
 - **🔧 Cross-Platform**: Same configuration works on Windows and macOS
 - **🛡️ Safe Teardown**: Only removes packages installed by this setup
 - **📝 Well Documented**: Comprehensive documentation for both platforms
+- **🔄 Intelligent Updates**: Checks for existing packages and updates them instead of reinstalling
+- **📦 Bucket Management**: Automatically verifies and adds required package manager buckets
 
 ## Contributing
 
