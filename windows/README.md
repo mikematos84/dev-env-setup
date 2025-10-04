@@ -126,14 +126,35 @@ platforms:
 - **Internet connection** for downloading packages
 - **OpenSSH** (will be installed automatically if missing)
 
+## Smart Installation Features
+
+The setup script includes several intelligent features to make the installation process more efficient and reliable:
+
+### Git Management
+- **Automatic Installation**: Git is installed immediately after Scoop to ensure it's available for subsequent operations
+- **Update Detection**: If Git is already installed, the script will update it instead of reinstalling
+- **Error Handling**: Continues with the setup even if Git installation fails
+
+### Bucket Management
+- **Bucket Verification**: Checks if required Scoop buckets are already added before attempting to add them
+- **Efficient Processing**: Skips adding buckets that are already present
+- **Clear Feedback**: Provides clear messages about bucket status
+
+### Package Installation
+- **Update Detection**: Checks if packages are already installed and updates them instead of reinstalling
+- **Dependency Management**: Handles package dependencies automatically
+- **Error Recovery**: Continues with other packages if one fails to install
+
 ## How It Works
 
 1. **Configuration Loading**: Loads `bootstrap.yaml` from the project root
 2. **Package Merging**: Combines global packages with Windows-specific packages
 3. **Scoop Installation**: Installs Scoop if not present
-4. **Package Installation**: Installs packages using Scoop
-5. **Configuration**: Runs post-installation configuration commands
-6. **SSH Setup**: Configures SSH with your keys
+4. **Git Installation**: Installs or updates Git immediately after Scoop
+5. **Bucket Management**: Checks and adds required Scoop buckets
+6. **Package Installation**: Installs or updates packages using Scoop (with intelligent checking)
+7. **Configuration**: Runs post-installation configuration commands
+8. **SSH Setup**: Configures SSH with your keys
 
 ## Troubleshooting
 
@@ -154,6 +175,20 @@ If Git SSH doesn't work properly:
 1. Verify SSH keys are in `C:/Users/<username>/.ssh/`
 2. Check that the SSH config file was created: `C:/Users/<username>/.ssh/config`
 3. Test SSH connection: `ssh -T git@github.com`
+
+### Git Installation Issues
+If Git installation fails:
+1. Check your internet connection
+2. Verify Scoop is working: `scoop --version`
+3. Try manually installing Git: `scoop install git`
+4. The script will continue even if Git installation fails
+
+### Bucket Addition Issues
+If bucket addition fails:
+1. Check your internet connection
+2. Verify Scoop is working: `scoop --version`
+3. Try manually adding buckets: `scoop bucket add extras`
+4. The script will continue with package installation
 
 ## Teardown
 

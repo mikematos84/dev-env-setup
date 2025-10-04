@@ -128,14 +128,28 @@ platforms:
 - **Command Line Tools** (will be installed automatically if missing)
 - **Internet connection** for downloading packages
 
+## Smart Installation Features
+
+The setup script includes several intelligent features to make the installation process more efficient and reliable:
+
+### Package Management
+- **Update Detection**: Checks if packages are already installed and updates them instead of reinstalling
+- **Dependency Management**: Handles package dependencies automatically
+- **Error Recovery**: Continues with other packages if one fails to install
+
+### Git Configuration
+- **Pre-installed Git**: Git comes pre-installed on macOS, so the script focuses on configuration
+- **Global Settings**: Applies your personal Git settings from the configuration file
+- **Platform-Specific**: Uses macOS-appropriate Git settings
+
 ## How It Works
 
 1. **Configuration Loading**: Loads `bootstrap.yaml` from the project root
 2. **Package Merging**: Combines global packages with macOS-specific packages
 3. **Homebrew Installation**: Installs Homebrew if not present
-4. **Package Installation**: Installs packages using Homebrew (formulas and casks)
+4. **Package Installation**: Installs or updates packages using Homebrew (formulas and casks)
 5. **Configuration**: Runs post-installation configuration commands
-6. **Git Setup**: Configures Git with your personal settings
+6. **Git Setup**: Configures Git with your personal settings (Git is pre-installed on macOS)
 7. **NVM Setup**: Installs and configures Node Version Manager
 
 ## Troubleshooting
