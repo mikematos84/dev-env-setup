@@ -43,47 +43,70 @@ Right click on **Teardown.ps1** in the **windows** folder and select **"Run with
 
 ## Configuration
 
-The setup process is now driven by a YAML configuration file (`config.yaml`) that allows you to customize which applications and tools are installed. This makes it easy to:
+The setup process is now driven by a centralized YAML configuration file (`bootstrap.yaml`) in the project root that allows you to customize which applications and tools are installed. This makes it easy to:
 
 - Add or remove applications without modifying PowerShell scripts
 - Create different configurations for different environments
 - Track configuration changes in version control
 - Share configurations with team members
+- Use the same configuration across Windows and macOS platforms
 
 ### Configuration Structure
 
-The `config.yaml` file supports the following sections:
+The `bootstrap.yaml` file supports the following sections:
 
-- **`buckets`**: Array of Scoop buckets to add (e.g., "extras", "main")
-- **`dependencies`**: Required system dependencies (supports optional `category` field for grouping)
-- **`devDependencies`**: Development tools and applications (supports optional `category` field for grouping)
-- **`system`**: System configuration options (SSH, Git, etc.)
+- **`packages`**: Global packages that apply to all platforms (can be simple strings or objects with `name`, `run`, `install` properties)
+- **`platforms`**: Platform-specific configurations
+  - **`windows`**: Windows-specific packages and settings
+  - **`osx`**: macOS-specific packages and settings
+- **`sshAgent`**: SSH agent configuration (platform-specific)
+- **`git`**: Git configuration (platform-specific)
+
+### Package Configuration
+
+Packages can be configured in two ways:
+
+**Simple packages** (just install):
+```yaml
+packages:
+  - vscode
+  - slack
+```
+
+**Advanced packages** (with configuration):
+```yaml
+packages:
+  - name: git
+    install: false  # Skip installation, just configure
+    run: |
+      git config --global user.name "Your Name"
+      git config --global user.email "your_email@example.com"
+```
 
 ### Customizing Your Setup
 
-1. Edit `config.yaml` to modify the applications list to match your needs
+1. Edit `bootstrap.yaml` in the project root to modify the applications list to match your needs
 2. Run the setup script
 
 ### Git Configuration
 
-The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `config.yaml` with your own information:
+The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `bootstrap.yaml` with your own information:
 
 ```yaml
-system:
-  git:
-    configureSSH: true
-    description: Configure Git with SSH integration and custom settings
-    config:
-      global:
-        init:
-          defaultBranch: main
-        user:
-          name: John Doe # Replace with your name
-          email: john.doe@example.com # Replace with your email
-        core:
-          sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
-        push:
-          autoSetupRemote: true
+packages:
+  - name: git
+    run: |
+      git config --global user.name "John Doe"  # Replace with your name
+      git config --global user.email "john.doe@example.com"  # Replace with your email
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
+
+platforms:
+  windows:
+    packages:
+      - name: git
+        run: |
+          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
 ```
 
 #### Required Changes

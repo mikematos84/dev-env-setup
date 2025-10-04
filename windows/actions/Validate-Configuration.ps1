@@ -13,48 +13,21 @@ function Validate-Configuration {
         $errors += "'buckets' must be an array"
     }
     
-    if(-not $config.dependencies) {
-        $errors += "Missing 'dependencies' section in configuration"
-    } elseif($config.dependencies -isnot [array] -and $config.dependencies.GetType().Name -notlike "*List*") {
-        $errors += "'dependencies' must be an array"
-    }
-    
-    if(-not $config.devDependencies) {
-        $errors += "Missing 'devDependencies' section in configuration"
-    } elseif($config.devDependencies -isnot [array] -and $config.devDependencies.GetType().Name -notlike "*List*") {
-        $errors += "'devDependencies' must be an array"
+    if(-not $config.packages) {
+        $warnings += "Missing 'packages' section in configuration - no packages will be installed"
+    } elseif($config.packages -isnot [array] -and $config.packages.GetType().Name -notlike "*List*") {
+        $errors += "'packages' must be an array"
     }
     
     if(-not $config.system) {
         $warnings += "Missing 'system' section in configuration - using defaults"
     }
     
-    # Validate dependencies structure
-    if($config.dependencies) {
-        foreach($dep in $config.dependencies) {
-            if(-not $dep.name) {
-                $errors += "Dependency missing 'name' property"
-            }
-            if(-not $dep.description) {
-                $warnings += "Dependency '$($dep.name)' missing 'description' property"
-            }
-            if($dep.required -eq $null) {
-                $warnings += "Dependency '$($dep.name)' missing 'required' property - defaulting to false"
-            }
-        }
-    }
-    
-    # Validate devDependencies structure
-    if($config.devDependencies) {
-        foreach($devDep in $config.devDependencies) {
-            if(-not $devDep.name) {
-                $errors += "DevDependency missing 'name' property"
-            }
-            if(-not $devDep.description) {
-                $warnings += "DevDependency '$($devDep.name)' missing 'description' property"
-            }
-            if($devDep.required -eq $null) {
-                $warnings += "DevDependency '$($devDep.name)' missing 'required' property - defaulting to false"
+    # Validate packages structure
+    if($config.packages) {
+        foreach($package in $config.packages) {
+            if(-not $package -or $package -eq "") {
+                $errors += "Empty package name found in packages array"
             }
         }
     }
@@ -66,9 +39,6 @@ function Validate-Configuration {
         }
         if($config.system.sshAgent -and $config.system.sshAgent.autoStart -eq $null) {
             $warnings += "SSH Agent 'autoStart' property not specified - defaulting to true"
-        }
-        if($config.system.git -and $config.system.git.configureSSH -eq $null) {
-            $warnings += "Git 'configureSSH' property not specified - defaulting to true"
         }
     }
     
