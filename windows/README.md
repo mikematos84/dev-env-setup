@@ -1,49 +1,55 @@
-[home](../README.md) / Windows
-# Windows
+# Windows Developer Environment Setup
 
-This setup makes use of the Windows-based package manager, [Scoop](https://scoop.sh).
+This directory contains scripts for setting up a complete development environment on Windows using Scoop as the package manager.
 
-## Prerequisites
+## Quick Start
 
-### System Requirements
-- Windows 10 version 1809 or later, or Windows 11
-- PowerShell 5.1 or later
-- Administrator privileges (for some operations)
-- Internet connection
-- PowerShell Gallery access (for powershell-yaml module installation)
+1. **Clone the repository** (if you haven't already):
+   ```powershell
+   git clone <repository-url>
+   cd dev-env-setup
+   ```
 
-### OpenSSH Installation
-The setup requires OpenSSH for Windows. If not already installed, you may need to install it manually:
+2. **Configure your settings** in `bootstrap.yaml` (see Configuration section below)
 
-1. Run PowerShell as Administrator
-2. Install OpenSSH Client: `Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0`
-3. Install OpenSSH Server (optional): `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0`
-4. Restart your terminal after installation
+3. **Run the setup**:
+   ```powershell
+   cd windows
+   .\Setup.ps1
+   ```
 
-### PowerShell Execution Policy
-The script will prompt you to set the execution policy to `RemoteSigned` for the current user. This is required for Scoop installation.
+4. **To remove everything** (optional):
+   ```powershell
+   .\Teardown.ps1
+   ```
 
-### PowerShell Modules
-The setup script will automatically install the `powershell-yaml` module if it's not already available. This module is required for parsing the YAML configuration file.
+## What Gets Installed
 
-## Pre-Setup
-1. If you have not created any public or private keys, see the [SSH Configuration](../README.md/#ssh-configuration) for more information before moving onto the next step
-2. Place any public (`*.pub`) and private keys in the `.ssh` folder (`C:/Users/<username>/.ssh`). If the folder does not exist, create it. 
+The setup script will install and configure:
 
-> Make sure to place both the **public** and **private** keys within this folder. The script will look for any public (`*.pub`) keys within this folder and use their base name (`*`) to create the necessary SSH config file
+### Package Managers
+- **Scoop** - Windows package manager
+- **NVM** - Node Version Manager
+- **Yarn** - Node.js package manager
+- **pnpm** - Fast, disk space efficient package manager
 
+### Development Tools
+- **Git** - Version control (with SSH configuration)
+- **Zed** - Modern code editor
+- **Cursor** - AI-powered code editor
+- **Visual Studio Code** - Popular code editor
 
-## Setup
+### Security Tools
+- **mkcert** - Local development certificates
 
-Right click on **Setup.ps1** in the **windows** folder and select **"Run with Powershell"**
-
-## Teardown
-
-Right click on **Teardown.ps1** in the **windows** folder and select **"Run with Powershell"**
+### Communication Tools
+- **Slack** - Team communication
+- **Zoom** - Video conferencing
+- **Microsoft Teams** - Collaboration platform
 
 ## Configuration
 
-The setup process is now driven by a centralized YAML configuration file (`bootstrap.yaml`) in the project root that allows you to customize which applications and tools are installed. This makes it easy to:
+The setup process is driven by a centralized YAML configuration file (`bootstrap.yaml`) in the project root that allows you to customize which applications and tools are installed. This makes it easy to:
 
 - Add or remove applications without modifying PowerShell scripts
 - Create different configurations for different environments
@@ -113,65 +119,98 @@ platforms:
 - **`user.name`**: Replace with your actual name
 - **`user.email`**: Replace with your actual email address
 
-#### Optional Settings
-- **`init.defaultBranch`**: Default branch name for new repositories (defaults to "main")
-- **`core.sshCommand`**: SSH command path (usually doesn't need changing)
-- **`push.autoSetupRemote`**: Automatically set up remote tracking (recommended: true)
-- **`configureSSH`**: Enable/disable SSH integration (recommended: true)
+## Prerequisites
 
-The script will automatically apply these settings to your global Git configuration during setup.
+- **Windows 10** version 1809 or later, or **Windows 11**
+- **PowerShell 5.1** or later
+- **Internet connection** for downloading packages
+- **OpenSSH** (will be installed automatically if missing)
 
-## Default Applications
+## How It Works
 
-### Dependencies
-
-#### Version Control
-- [`git-with-openssh`](https://scoop.sh/#/apps?q=git-with-openssh) - Used by Scoop to carry out various actions, such as adding [buckets](https://scoop.sh/#/buckets)
-
-#### System Tools
-- [`sudo`](https://scoop.sh/#/apps?q=sudo) - Used for requesting elevated (Administrator) privileges required by certain tasks
-
-### DevDependencies
-
-#### Runtime Managers
-- [`nvm`](https://scoop.sh/#/apps?q=nvm) - Node version management utility for Windows (required)
-
-#### Security Tools
-- [`mkcert`](https://scoop.sh/#/apps?q=mkcert) - A simple zero-config tool to make locally trusted development certificates (optional)
-
-#### Package Managers
-- [`yarn`](https://scoop.sh/#/apps?q=yarn) - Node.js dependency manager (optional)
-- [`pnpm`](https://scoop.sh/#/apps?q=pnpm) - Fast, disk space efficient package manager for Node.js (required)
-
-#### Code Editors
-- [`vscode`](https://scoop.sh/#/apps?q=vscode) - Visual Studio Code editor (optional)
-- [`zed`](https://scoop.sh/#/apps?q=zed) - Zed code editor (optional)
-- [`cursor`](https://scoop.sh/#/apps?q=cursor) - Cursor AI-powered code editor (required)
+1. **Configuration Loading**: Loads `bootstrap.yaml` from the project root
+2. **Package Merging**: Combines global packages with Windows-specific packages
+3. **Scoop Installation**: Installs Scoop if not present
+4. **Package Installation**: Installs packages using Scoop
+5. **Configuration**: Runs post-installation configuration commands
+6. **SSH Setup**: Configures SSH with your keys
 
 ## Troubleshooting
 
-### Common Issues
-
-#### SSH Agent Service Not Found
-If you encounter "SSH Agent service not found" errors:
-1. Ensure OpenSSH is installed (see Prerequisites section)
-2. Restart your terminal after installing OpenSSH
-3. Run the setup script again
-
-#### PowerShell Execution Policy Errors
+### PowerShell Execution Policy Errors
 If you get execution policy errors:
-1. Run PowerShell as Administrator
-2. Set execution policy: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force`
-3. Try running the script again
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+```
 
-#### Scoop Setup Fails
+### Scoop Setup Fails
 If Scoop setup fails:
 1. Check your internet connection
 2. Try running PowerShell as Administrator
 3. Ensure Windows Defender or antivirus isn't blocking the setup
 
-#### Git SSH Configuration Issues
+### SSH Configuration Issues
 If Git SSH doesn't work properly:
 1. Verify SSH keys are in `C:/Users/<username>/.ssh/`
 2. Check that the SSH config file was created: `C:/Users/<username>/.ssh/config`
 3. Test SSH connection: `ssh -T git@github.com`
+
+## Teardown
+
+To remove all installed packages and configurations:
+
+```powershell
+.\Teardown.ps1
+```
+
+**Note**: The teardown script will only remove packages that were installed by this setup script. It will preserve:
+- Scoop itself
+- Any packages you installed independently
+- Your personal files and configurations
+
+## Customization
+
+### Adding New Packages
+
+To add a new package, edit `bootstrap.yaml`:
+
+```yaml
+packages:
+  - your-new-package
+```
+
+Or for packages with configuration:
+
+```yaml
+packages:
+  - name: your-new-package
+    run: |
+      # Configuration commands
+      your-package --configure
+```
+
+### Platform-Specific Packages
+
+To add Windows-specific packages:
+
+```yaml
+platforms:
+  windows:
+    packages:
+      - name: windows-specific-tool
+        run: |
+          # Windows-specific configuration
+```
+
+## Contributing
+
+When adding new packages or features:
+
+1. Test on a clean Windows system
+2. Update this README if needed
+3. Ensure the package works with Scoop
+4. Add appropriate error handling
+
+## License
+
+This project is licensed under the same terms as the main repository.

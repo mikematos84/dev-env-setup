@@ -65,7 +65,7 @@ if [[ -n "$CONFIG_FILE" ]]; then
     .platforms.osx as $osx |
     {
       packages: ($global + $osx.packages),
-      git: .git,
+      configs: .configs,
       platform: $osx
     } |
     . * load("'$CONFIG_FILE'")
@@ -77,7 +77,7 @@ else
     .platforms.osx as $osx |
     {
       packages: ($global + $osx.packages),
-      git: .git,
+      configs: .configs,
       platform: $osx
     }
   ' "$BOOTSTRAP_CONFIG" >> "$INSTALLED_CONFIG"
@@ -162,14 +162,46 @@ echo "⬇️ Installing latest Node.js..."
 nvm install node
 nvm alias default node
 
-# --- Git config ---
-GIT_NAME=$(yq e '.git.user.name // ""' "$INSTALLED_CONFIG")
-GIT_EMAIL=$(yq e '.git.user.email // ""' "$INSTALLED_CONFIG")
+# --- Execute global configurations ---
+echo "⚙️ Executing global configurations..."
+GLOBAL_CONFIGS=$(yq e '.configs // {}' "$INSTALLED_CONFIG")
+if [[ "$GLOBAL_CONFIGS" != "{}" && "$GLOBAL_CONFIGS" != "null" ]]; then
+  # Get all config names
+  CONFIG_NAMES=$(echo "$GLOBAL_CONFIGS" | yq e 'keys[]' -)
+  for config_name in $CONFIG_NAMES; do
+    RUN_COMMANDS=$(echo "$GLOBAL_CONFIGS" | yq e ".$config_name.run // \"\"" -)
+    if [[ -n "$RUN_COMMANDS" && "$RUN_COMMANDS" != "null" && "$RUN_COMMANDS" != "" ]]; then
+      echo "  Running global config for $config_name..."
+      echo "$RUN_COMMANDS" | while IFS= read -r line; do
+        line=$(echo "$line" | sed 's/^[[:space:]]*//')  # Trim leading whitespace
+        if [[ -n "$line" && ! "$line" =~ ^# ]]; then  # Skip empty lines and comments
+          echo "    Executing: $line"
+          eval "$line" || echo "    ⚠️ Command failed: $line"
+        fi
+      done
+    fi
+  done
+fi
 
-if [[ -n "$GIT_NAME" && -n "$GIT_EMAIL" ]]; then
-  echo "⚙️ Setting git config"
-  git config --global user.name "$GIT_NAME"
-  git config --global user.email "$GIT_EMAIL"
+# --- Execute platform-specific configurations ---
+echo "⚙️ Executing OSX-specific configurations..."
+PLATFORM_CONFIGS=$(yq e '.platform.configs // {}' "$INSTALLED_CONFIG")
+if [[ "$PLATFORM_CONFIGS" != "{}" && "$PLATFORM_CONFIGS" != "null" ]]; then
+  # Get all config names
+  CONFIG_NAMES=$(echo "$PLATFORM_CONFIGS" | yq e 'keys[]' -)
+  for config_name in $CONFIG_NAMES; do
+    RUN_COMMANDS=$(echo "$PLATFORM_CONFIGS" | yq e ".$config_name.run // \"\"" -)
+    if [[ -n "$RUN_COMMANDS" && "$RUN_COMMANDS" != "null" && "$RUN_COMMANDS" != "" ]]; then
+      echo "  Running OSX-specific config for $config_name..."
+      echo "$RUN_COMMANDS" | while IFS= read -r line; do
+        line=$(echo "$line" | sed 's/^[[:space:]]*//')  # Trim leading whitespace
+        if [[ -n "$line" && ! "$line" =~ ^# ]]; then  # Skip empty lines and comments
+          echo "    Executing: $line"
+          eval "$line" || echo "    ⚠️ Command failed: $line"
+        fi
+      done
+    fi
+  done
 fi
 
 echo "✅ Setup complete!"
