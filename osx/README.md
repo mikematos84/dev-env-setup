@@ -71,23 +71,44 @@ The `bootstrap.yaml` file supports the following sections:
 
 ### Package Configuration
 
-Packages can be configured in two ways:
+The configuration uses a simple structure with separate sections for packages and configurations:
 
 **Simple packages** (just install):
 ```yaml
 packages:
-  - vscode
+  - nvm
+  - yarn
+  - pnpm
+  - zed
+  - cursor
+  - mkcert
   - slack
+  - zoom
+  - microsoft-teams
 ```
 
-**Advanced packages** (with configuration):
+**Configuration sections** (separate from packages):
 ```yaml
-packages:
-  - name: git
-    install: false  # Skip installation, just configure
+configs:
+  git:
     run: |
       git config --global user.name "Your Name"
       git config --global user.email "your_email@example.com"
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
+```
+
+**Platform-specific packages and configs**:
+```yaml
+platforms:
+  osx:
+    packages:
+      - iterm2
+      - visual-studio-code
+    configs:
+      git:
+        run: |
+          git config --global core.editor "code --wait"
 ```
 
 ### Customizing Your Setup
@@ -100,8 +121,9 @@ packages:
 The setup automatically configures Git with your personal settings. **Important**: Before running the setup, you should update the Git configuration in `bootstrap.yaml` with your own information:
 
 ```yaml
-packages:
-  - name: git
+# Global Git configuration
+configs:
+  git:
     run: |
       git config --global user.name "John Doe"  # Replace with your name
       git config --global user.email "john.doe@example.com"  # Replace with your email
@@ -110,12 +132,10 @@ packages:
 
 platforms:
   osx:
-    packages:
-      - name: git
-        install: false  # Git is pre-installed on macOS
+    configs:
+      git:
         run: |
-          # macOS-specific Git configuration (if needed)
-          # Global config will be applied first
+          git config --global core.editor "code --wait"
 ```
 
 #### Required Changes
@@ -198,11 +218,11 @@ packages:
   - your-new-package
 ```
 
-Or for packages with configuration:
+For packages that need configuration, add them to the configs section:
 
 ```yaml
-packages:
-  - name: your-new-package
+configs:
+  your-new-package:
     run: |
       # Configuration commands
       your-package --configure
@@ -216,7 +236,9 @@ To add macOS-specific packages:
 platforms:
   osx:
     packages:
-      - name: macos-specific-tool
+      - macos-specific-tool
+    configs:
+      macos-specific-tool:
         run: |
           # macOS-specific configuration
 ```
