@@ -54,12 +54,12 @@ function Set-GitConfiguration {
             
             Write-Host "Git global configuration completed successfully"
         } else {
-            Write-Warning "No global Git configuration found in config.yaml"
+            Write-Warning "No global Git configuration found in bootstrap.yaml"
         }
         
-        # Configure SSH-related settings if configureSSH is enabled
-        if ($Config.system.git.configureSSH) {
-            Write-Host "Configuring Git SSH integration..."
+        # Configure SSH-related settings if SSH agent is enabled
+        if ($Config.system.sshAgent.enabled) {
+            Write-Host "Configuring Git SSH integration (SSH agent is enabled)..."
             
             # The SSH command should already be set above, but we'll ensure it's set
             if ($Config.system.git.config.global.core.sshCommand) {

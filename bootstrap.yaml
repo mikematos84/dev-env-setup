@@ -1,23 +1,19 @@
-# Thie is the global git configuration that will be applied to all platforms
-git: 
-  global:
-    init:
-      defaultBranch: main 
-    user:
-      name: Your Name
-      email: your_email@example.com
-    push:
-      autoSetupRemote: true
-
 # Shared package across package managers. 
 # These packages share the same names across the used package managers.
 packages:
+  # Git with global configuration
+  - name: git
+    run: |
+      git config --global user.name "Your Name" # Replace with your name
+      git config --global user.email "your_email@example.com" # Replace with your email
+      git config --global init.defaultBranch main
+      git config --global push.autoSetupRemote true
   # Runtime Managers
   - nvm
   # Package Managers
   - yarn
   - pnpm
-  # Code Editos
+  # Code Editors
   - zed
   - cursor
   # Security Tools
@@ -37,6 +33,12 @@ platforms:
     apps:
     # Packages available from https://brew.sh
     packages:
+      # Version Control
+      - name: git
+        install: false # Git is pre-installed on macOS, just configure it
+        run: |
+          # macOS-specific Git configuration (if needed)
+          # Global config will be applied first
       # Terminals
       - iterm2
       # Code Editors
@@ -49,16 +51,16 @@ platforms:
     packageManager: scoop
     # Packages available from https://scoop.sh
     packages:
+      # Version Control
+      - name: git
+        run: |
+          # Windows-specific Git configuration
+          git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
+      # Code Editors
       - vscode
-    system:
-      sshAgent:
-        enabled: true
-        autoStart: true
-      git:
-        configureSSH: true
-        global:
-          core:
-            sshCommand: C:/Windows/System32/OpenSSH/ssh.exe
+    sshAgent:
+      enabled: true
+      autoStart: true
 
 
 

@@ -46,8 +46,9 @@ Write-Host "=== Windows Developer Environment Setup ==="
 
 # Load Configuration
 function Get-Configuration {
-    $configPath = Join-Path $scriptPath "config.yaml"
-    if (Test-Path $configPath) {
+    $bootstrapConfigPath = Join-Path (Split-Path $scriptPath -Parent) "bootstrap.yaml"
+    
+    if (Test-Path $bootstrapConfigPath) {
         try {
             # Ensure powershell-yaml module is available
             if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
@@ -56,16 +57,83 @@ function Get-Configuration {
             }
             
             Import-Module powershell-yaml -Force
-            $config = Get-Content $configPath -Raw | ConvertFrom-Yaml
-            Write-Host "Configuration loaded successfully from $configPath"
-            return $config
+            
+            # Load bootstrap config
+            $bootstrapConfig = Get-Content $bootstrapConfigPath -Raw | ConvertFrom-Yaml
+            Write-Host "Bootstrap configuration loaded successfully from $bootstrapConfigPath"
+            
+            # Create merged config similar to OSX approach
+            $mergedConfig = @{
+                buckets = @("extras")  # Default bucket
+                packages = @()
+                system = @{}
+            }
+            
+            # Add global packages
+            if ($bootstrapConfig.packages) {
+                foreach ($package in $bootstrapConfig.packages) {
+                    $mergedConfig.packages += $package
+                }
+            }
+            
+            # Add Windows-specific packages with smart merging
+            if ($bootstrapConfig.platforms.windows.packages) {
+                foreach ($package in $bootstrapConfig.platforms.windows.packages) {
+                    # Check if this package already exists (by name)
+                    $existingPackageIndex = -1
+                    for ($i = 0; $i -lt $mergedConfig.packages.Count; $i++) {
+                        $existingPackage = $mergedConfig.packages[$i]
+                        $existingPackageName = if ($existingPackage -is [string]) { $existingPackage } else { $existingPackage.name }
+                        if ($existingPackageName -eq $package.name) {
+                            $existingPackageIndex = $i
+                            break
+                        }
+                    }
+                    
+                    if ($existingPackageIndex -ge 0) {
+                        # Merge with existing package
+                        $existingPackage = $mergedConfig.packages[$existingPackageIndex]
+                        if ($existingPackage -is [string]) {
+                            # Convert string to object and merge
+                            $mergedPackage = @{
+                                name = $existingPackage
+                                run = $package.run
+                                install = $package.install
+                            }
+                        } else {
+                            # Merge object properties
+                            $mergedPackage = $existingPackage.PSObject.Copy()
+                            if ($package.run) {
+                                # Append platform-specific run commands
+                                $mergedPackage.run = $existingPackage.run + "`n" + $package.run
+                            }
+                            if ($package.install -ne $null) {
+                                $mergedPackage.install = $package.install
+                            }
+                        }
+                        $mergedConfig.packages[$existingPackageIndex] = $mergedPackage
+                    } else {
+                        # Add new package
+                        $mergedConfig.packages += $package
+                    }
+                }
+            }
+            
+            # Add Windows-specific system configuration
+            if ($bootstrapConfig.platforms.windows.sshAgent) {
+                $mergedConfig.system.sshAgent = $bootstrapConfig.platforms.windows.sshAgent
+            }
+            
+            
+            Write-Host "Merged configuration created successfully"
+            return $mergedConfig
         } catch {
-            Write-Error "Failed to parse configuration file: $($_.Exception.Message)"
+            Write-Error "Failed to parse bootstrap configuration file: $($_.Exception.Message)"
             exit 1
         }
     } else {
-        Write-Error "Configuration file not found: $configPath"
-        Write-Host "Please ensure config.yaml exists in the windows directory."
+        Write-Error "Bootstrap configuration file not found: $bootstrapConfigPath"
+        Write-Host "Please ensure bootstrap.yaml exists in the project root."
         exit 1
     }
 }
@@ -142,18 +210,56 @@ if((Test-CommandExists scoop) -eq $false){
   	}
 }
   	
-# Install dependencies
-Write-Host "Installing dependencies..."
-foreach($dep in $config.dependencies) {
-    if($dep.required) {
-        if((Test-CommandExists git) -eq $false -and $dep.name -eq "git-with-openssh") {
-            Install-App -appName $dep.name -description $dep.description -required $dep.required
-        } elseif($dep.name -ne "git-with-openssh") {
-            Install-App -appName $dep.name -description $dep.description -required $dep.required
+# Install packages
+Write-Host "Installing packages..."
+if ($config.packages) {
+    foreach($package in $config.packages) {
+        # Handle both string packages and object packages
+        if ($package -is [string]) {
+            $packageName = $package
+            $runCommands = $null
+            $shouldInstall = $true
+        } else {
+            $packageName = $package.name
+            $runCommands = $package.run
+            $shouldInstall = $package.install -ne $false  # Default to true unless explicitly false
         }
-    } else {
-        Write-Host "Skipping optional dependency: $($dep.name) ($($dep.description))"
+        
+        if (-not $shouldInstall) {
+            Write-Host "Skipping installation of $packageName (install: false)"
+        } else {
+            Write-Host "Installing $packageName..."
+            scoop install $packageName
+            if($LASTEXITCODE -ne 0) {
+                Write-Warning "Failed to install package: $packageName"
+            } else {
+                Write-Host "Successfully installed $packageName"
+            }
+        }
+        
+        # Execute run commands if specified (regardless of installation)
+        if ($runCommands) {
+            Write-Host "Running post-install commands for $packageName..."
+            try {
+                # Split multi-line commands and execute each
+                $commands = $runCommands -split "`n" | Where-Object { $_.Trim() -ne "" -and $_.Trim() -notlike "#*" }
+                foreach ($command in $commands) {
+                    $command = $command.Trim()
+                    if ($command) {
+                        Write-Host "  Executing: $command"
+                        Invoke-Expression $command
+                        if($LASTEXITCODE -ne 0) {
+                            Write-Warning "Command failed: $command"
+                        }
+                    }
+                }
+            } catch {
+                Write-Warning "Error running post-install commands for $packageName`: $($_.Exception.Message)"
+            }
+        }
     }
+} else {
+    Write-Host "No packages to install"
 }
 
 scoop update scoop
@@ -182,15 +288,6 @@ foreach($bucket in $config.buckets){
   	}
 }
 
-# Install devDependencies
-Write-Host "Installing development dependencies..."
-foreach($devDep in $config.devDependencies) {
-    if($devDep.required) {
-        Install-App -appName $devDep.name -description $devDep.description -required $devDep.required -postInstall $devDep.postInstall
-    } else {
-        Write-Host "Skipping optional devDependency: $($devDep.name) ($($devDep.description))"
-    }
-}
 
 # Configure system settings based on configuration
 if($config.system.sshAgent.enabled) {
@@ -212,10 +309,7 @@ if($config.system.sshAgent.enabled) {
     }
 }
 
-# Configure Git settings from config
-if($config.system.git -and (Test-CommandExists git) -eq $true){
-    Set-GitConfiguration -Config $config
-}
+# Git configuration is now handled by package run commands
 
 Write-Host "=== Installation Complete ==="
 Write-Host "You may need to restart your terminal or run 'refreshenv' to use the newly installed tools."

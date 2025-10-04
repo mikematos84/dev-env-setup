@@ -98,17 +98,51 @@ echo "📦 Installing packages..."
 PACKAGES=$(yq e '.packages[]' "$INSTALLED_CONFIG")
 
 if [[ -n "$PACKAGES" ]]; then
-  echo "📦 Installing packages: $PACKAGES"
+  echo "📦 Processing packages..."
   
-  # Install packages using Homebrew
+  # Process packages using Homebrew
   for package in $PACKAGES; do
-    echo "  Installing: $package"
-    if [[ "$package" =~ ^(iterm2|visual-studio-code|slack|zoom|microsoft-teams|docker)$ ]]; then
-      # Install as cask (GUI applications)
-      brew install --cask "$package" || echo "  ⚠️ Failed to install $package (cask)"
+    # Check if package is a simple string or an object
+    if echo "$package" | grep -q "name:"; then
+      # It's an object, extract name and check for install
+      PACKAGE_NAME=$(echo "$package" | yq e '.name' -)
+      SHOULD_INSTALL=$(echo "$package" | yq e '.install // true' -)
+      RUN_COMMANDS=$(echo "$package" | yq e '.run // ""' -)
+      
+      if [[ "$SHOULD_INSTALL" == "false" ]]; then
+        echo "  Skipping installation of $PACKAGE_NAME (install: false)"
+      else
+        echo "  Installing: $PACKAGE_NAME"
+        if [[ "$PACKAGE_NAME" =~ ^(iterm2|visual-studio-code|slack|zoom|microsoft-teams|docker)$ ]]; then
+          # Install as cask (GUI applications)
+          brew install --cask "$PACKAGE_NAME" || echo "  ⚠️ Failed to install $PACKAGE_NAME (cask)"
+        else
+          # Install as formula (command line tools)
+          brew install "$PACKAGE_NAME" || echo "  ⚠️ Failed to install $PACKAGE_NAME (formula)"
+        fi
+      fi
+      
+      # Execute run commands if specified
+      if [[ -n "$RUN_COMMANDS" && "$RUN_COMMANDS" != "null" ]]; then
+        echo "  Running post-install commands for $PACKAGE_NAME..."
+        echo "$RUN_COMMANDS" | while IFS= read -r line; do
+          line=$(echo "$line" | sed 's/^[[:space:]]*//')  # Trim leading whitespace
+          if [[ -n "$line" && ! "$line" =~ ^# ]]; then  # Skip empty lines and comments
+            echo "    Executing: $line"
+            eval "$line" || echo "    ⚠️ Command failed: $line"
+          fi
+        done
+      fi
     else
-      # Install as formula (command line tools)
-      brew install "$package" || echo "  ⚠️ Failed to install $package (formula)"
+      # It's a simple string package
+      echo "  Installing: $package"
+      if [[ "$package" =~ ^(iterm2|visual-studio-code|slack|zoom|microsoft-teams|docker)$ ]]; then
+        # Install as cask (GUI applications)
+        brew install --cask "$package" || echo "  ⚠️ Failed to install $package (cask)"
+      else
+        # Install as formula (command line tools)
+        brew install "$package" || echo "  ⚠️ Failed to install $package (formula)"
+      fi
     fi
   done
 else
