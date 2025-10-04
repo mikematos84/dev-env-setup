@@ -84,7 +84,37 @@ if (-not (Test-CommandExists scoop)) {
     }
 }
 
-# Add Scoop buckets immediately after Scoop installation
+# Install or update Git immediately after Scoop installation
+Write-Host "Installing/updating Git..."
+$isGitInstalled = $false
+try {
+    $installedCheck = scoop list git 2>$null
+    if ($installedCheck -and $installedCheck -match "git") {
+        $isGitInstalled = $true
+    }
+} catch {
+    $isGitInstalled = $false
+}
+
+if ($isGitInstalled) {
+    Write-Host "Updating Git..."
+    scoop update git
+    if($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to update Git"
+    } else {
+        Write-Host "Successfully updated Git"
+    }
+} else {
+    Write-Host "Installing Git..."
+    scoop install git
+    if($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to install Git. Please check your internet connection."
+    } else {
+        Write-Host "Successfully installed Git"
+    }
+}
+
+# Add Scoop buckets
 Write-Host "Adding Scoop buckets..."
 $buckets = @("extras")  # Default bucket
 if ($bootstrapConfig.platforms.windows.buckets) {
@@ -92,12 +122,27 @@ if ($bootstrapConfig.platforms.windows.buckets) {
 }
 
 foreach($bucket in $buckets) {
-    Write-Host "Adding bucket: $bucket"
-    scoop bucket add $bucket 2>$null
-    if($LASTEXITCODE -ne 0) {
-        Write-Warning "Failed to add bucket: $bucket"
+    # Check if bucket is already added
+    $isBucketAdded = $false
+    try {
+        $bucketList = scoop bucket list 2>$null
+        if ($bucketList -and $bucketList -match $bucket) {
+            $isBucketAdded = $true
+        }
+    } catch {
+        $isBucketAdded = $false
+    }
+    
+    if ($isBucketAdded) {
+        Write-Host "Bucket '$bucket' is already added"
     } else {
-        Write-Host "Successfully added bucket: $bucket"
+        Write-Host "Adding bucket: $bucket"
+        scoop bucket add $bucket 2>$null
+        if($LASTEXITCODE -ne 0) {
+            Write-Warning "Failed to add bucket: $bucket"
+        } else {
+            Write-Host "Successfully added bucket: $bucket"
+        }
     }
 }
 
