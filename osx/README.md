@@ -29,7 +29,7 @@ The setup script will install and configure:
 
 ### Package Managers
 - **Homebrew** - macOS package manager
-- **NVM** - Node Version Manager
+- **NVM** - Node Version Manager (installs latest Node.js LTS)
 - **Yarn** - Node.js package manager
 - **pnpm** - Fast, disk space efficient package manager
 
@@ -161,6 +161,11 @@ The setup script includes several intelligent features to make the installation 
 - **Pre-installed Git**: Git comes pre-installed on macOS, so the script focuses on configuration
 - **Global Settings**: Applies your personal Git settings from the configuration file
 - **Platform-Specific**: Uses macOS-appropriate Git settings
+
+### Node.js Management
+- **LTS Installation**: Automatically installs the latest Node.js LTS version via NVM
+- **Version Management**: Sets the LTS version as the default for new terminal sessions
+- **Automatic Setup**: No manual configuration required for Node.js development
 
 ## How It Works
 

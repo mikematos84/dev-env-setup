@@ -29,7 +29,7 @@ The setup script will install and configure:
 
 ### Package Managers
 - **Scoop** - Windows package manager
-- **NVM** - Node Version Manager
+- **NVM** - Node Version Manager (installs latest Node.js LTS)
 - **Yarn** - Node.js package manager
 - **pnpm** - Fast, disk space efficient package manager
 
@@ -170,6 +170,11 @@ The setup script includes several intelligent features to make the installation 
 - **Update Detection**: Checks if packages are already installed and updates them instead of reinstalling
 - **Dependency Management**: Handles package dependencies automatically
 - **Error Recovery**: Continues with other packages if one fails to install
+
+### Node.js Management
+- **LTS Installation**: Automatically installs the latest Node.js LTS version via NVM
+- **Version Management**: Sets the LTS version as the default for new terminal sessions
+- **Automatic Setup**: No manual configuration required for Node.js development
 
 ## How It Works
 
