@@ -40,6 +40,26 @@ Import-Module powershell-yaml -Force
 $bootstrapConfig = Get-Content $bootstrapConfigPath -Raw | ConvertFrom-Yaml
 $packages = @()
 
+# Collect all environment variables from all scopes
+$globalEnv = @{}
+if ($bootstrapConfig.env) {
+    foreach ($envVar in $bootstrapConfig.env.GetEnumerator()) {
+        $globalEnv[$envVar.Key] = $envVar.Value
+    }
+}
+
+# Function to merge environment variables (global + local)
+function Merge-EnvironmentVariables {
+    param($localEnv)
+    $mergedEnv = $globalEnv.Clone()
+    if ($localEnv) {
+        foreach ($envVar in $localEnv.GetEnumerator()) {
+            $mergedEnv[$envVar.Key] = $envVar.Value
+        }
+    }
+    return $mergedEnv
+}
+
 # Add global packages
 if ($bootstrapConfig.packages) {
     $packages += $bootstrapConfig.packages
@@ -154,10 +174,13 @@ if ($packages) {
             $packageName = $package
             $runCommands = $null
             $shouldInstall = $true
+            $packageEnv = $globalEnv
         } else {
             $packageName = $package.name
             $runCommands = $package.run
             $shouldInstall = $package.install -ne $false
+            $localEnv = if ($package.env) { $package.env } else { @{} }
+            $packageEnv = Merge-EnvironmentVariables $localEnv
         }
         
         if (-not $shouldInstall) {
@@ -200,6 +223,11 @@ if ($packages) {
             foreach ($command in $commands) {
                 $command = $command.Trim()
                 if ($command) {
+                    # Replace environment variables in the command
+                    foreach ($envVar in $packageEnv.GetEnumerator()) {
+                        $command = $command.Replace("`$$($envVar.Key)", $envVar.Value)
+                    }
+                    
                     Write-Host "  Executing: $command"
                     Invoke-Expression $command
                     if($LASTEXITCODE -ne 0) {
@@ -220,10 +248,17 @@ if ($bootstrapConfig.configs) {
         $config = $bootstrapConfig.configs.$configName
         if ($config.run) {
             Write-Host "Running global config for $configName..."
+            $localEnv = if ($config.env) { $config.env } else { @{} }
+            $configEnv = Merge-EnvironmentVariables $localEnv
             $commands = $config.run -split "`n" | Where-Object { $_.Trim() -ne "" -and $_.Trim() -notlike "#*" }
             foreach ($command in $commands) {
                 $command = $command.Trim()
                 if ($command) {
+                    # Replace environment variables in the command
+                    foreach ($envVar in $configEnv.GetEnumerator()) {
+                        $command = $command.Replace("`$$($envVar.Key)", $envVar.Value)
+                    }
+                    
                     Write-Host "  Executing: $command"
                     Invoke-Expression $command
                     if($LASTEXITCODE -ne 0) {
@@ -242,10 +277,17 @@ if ($bootstrapConfig.platforms.windows.configs) {
         $config = $bootstrapConfig.platforms.windows.configs.$configName
         if ($config.run) {
             Write-Host "Running Windows-specific config for $configName..."
+            $localEnv = if ($config.env) { $config.env } else { @{} }
+            $configEnv = Merge-EnvironmentVariables $localEnv
             $commands = $config.run -split "`n" | Where-Object { $_.Trim() -ne "" -and $_.Trim() -notlike "#*" }
             foreach ($command in $commands) {
                 $command = $command.Trim()
                 if ($command) {
+                    # Replace environment variables in the command
+                    foreach ($envVar in $configEnv.GetEnumerator()) {
+                        $command = $command.Replace("`$$($envVar.Key)", $envVar.Value)
+                    }
+                    
                     Write-Host "  Executing: $command"
                     Invoke-Expression $command
                     if($LASTEXITCODE -ne 0) {

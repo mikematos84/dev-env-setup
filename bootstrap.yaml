@@ -1,11 +1,15 @@
+# Global environment variables available everywhere
+env:
+  NODE_LTS_VERSION: 22
+
 # Shared package across package managers. 
 # These packages share the same names across the used package managers.
 packages:
   # Runtime Managers
   - name: nvm
     run: |
-      nvm install 22
-      nvm use 22
+      nvm install $NODE_LTS_VERSION
+      nvm use $NODE_LTS_VERSION
   # Package Managers
   - yarn
   - pnpm
