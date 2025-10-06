@@ -2,7 +2,10 @@
 # These packages share the same names across the used package managers.
 packages:
   # Runtime Managers
-  - nvm
+  - name: nvm
+    run: |
+      nvm install 22
+      nvm use 22
   # Package Managers
   - yarn
   - pnpm
